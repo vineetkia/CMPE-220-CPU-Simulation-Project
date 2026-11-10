@@ -1,0 +1,696 @@
+\noindent\begin{tcolorbox}[stepbox, title={Step 0 \hfill starting state}]
+\textcolor{dim}{program loaded into memory}\\
+\textcolor{dim}{all registers start at 0}\\
+PC=00 IR=0000 MAR=00 MDR=0000\\
+Z=0 N=0 C=0 V=0\\
+R0=0000 R1=0000 R2=0000 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=8  result=0}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & \cellcolor{pcc}\textbf{8409} & 7201 & 3250 & 920A & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0008 & \cellcolor{datac}0000 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 1 \hfill PC 00 \quad LD R2, n}]
+\textcolor{dim}{IR} 8409 = 1000 010 0 00001001\\
+R2 $\leftarrow$ M[0x09] (n) = 8\\
+\textcolor{dim}{BUS} read M[00]=8409, read M[09]=0008\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=01 IR=8409 MAR=09 MDR=0008\\
+Z=0 N=0 C=0 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=0000 \textcolor{wrt}{\textbf{R2=0008}} R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=8  result=0}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & \cellcolor{pcc}\textbf{7201} & 3250 & 920A & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0008 & \cellcolor{datac}0000 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 2 \hfill PC 01 \quad LI R1, 1}]
+\textcolor{dim}{IR} 7201 = 0111 001 000000001\\
+R1 $\leftarrow$ 1\\
+\textcolor{dim}{BUS} read M[01]=7201\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=02 IR=7201 MAR=01 MDR=7201\\
+Z=0 N=0 C=0 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 \textcolor{wrt}{\textbf{R1=0001}} R2=0008 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=8  result=0}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & \cellcolor{pcc}\textbf{3250} & 920A & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0008 & \cellcolor{datac}0000 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 3 \hfill PC 02 \quad MUL R1, R1, R2}]
+\textcolor{dim}{IR} 3250 = 0011 001 001 010 000\\
+R1 $\leftarrow$ 1 $\times$ 8 = 8\\
+\textcolor{dim}{BUS} read M[02]=3250\\
+\textcolor{dim}{ALU} MUL A=0001 B=0008 $\rightarrow$ 0008\\
+PC=03 IR=3250 MAR=02 MDR=3250\\
+Z=0 N=0 C=0 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 \textcolor{wrt}{\textbf{R1=0008}} R2=0008 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=8  result=0}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & \cellcolor{pcc}\textbf{920A} & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0008 & \cellcolor{datac}0000 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 4 \hfill PC 03 \quad ST R1, result}]
+\textcolor{dim}{IR} 920A = 1001 001 0 00001010\\
+M[0x0A] (result) $\leftarrow$ R1 = 8\\
+\textcolor{dim}{BUS} read M[03]=920A, \textcolor{wrt}{write M[0A]=0008}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=04 IR=920A MAR=0A MDR=0008\\
+Z=0 N=0 C=0 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=0008 R2=0008 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=8  result=8}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & \cellcolor{pcc}\textbf{64BF} & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0008 & \cellcolor{wrt}\textcolor{white}{\textbf{0008}} & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 5 \hfill PC 04 \quad ADDI R2, R2, -1}]
+\textcolor{dim}{IR} 64BF = 0110 010 010 111111\\
+R2 $\leftarrow$ 8 + (-1) = 7\\
+\textcolor{dim}{BUS} read M[04]=64BF\\
+\textcolor{dim}{ALU} ADD A=0008 B=FFFF $\rightarrow$ 0007\\
+PC=05 IR=64BF MAR=04 MDR=64BF\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=0008 \textcolor{wrt}{\textbf{R2=0007}} R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=8  result=8}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & \cellcolor{pcc}\textbf{9409} & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0008 & \cellcolor{datac}0008 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 6 \hfill PC 05 \quad ST R2, n}]
+\textcolor{dim}{IR} 9409 = 1001 010 0 00001001\\
+M[0x09] (n) $\leftarrow$ R2 = 7\\
+\textcolor{dim}{BUS} read M[05]=9409, \textcolor{wrt}{write M[09]=0007}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=06 IR=9409 MAR=09 MDR=0007\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=0008 R2=0007 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=7  result=8}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & 9409 & \cellcolor{pcc}\textbf{B202} & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{wrt}\textcolor{white}{\textbf{0007}} & \cellcolor{datac}0008 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 7 \hfill PC 06 \quad BNE loop}]
+\textcolor{dim}{IR} B202 = 1011 0010 00000010\\
+PC $\leftarrow$ 0x02 (branch taken)\\
+\textcolor{dim}{BUS} read M[06]=B202\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=02 IR=B202 MAR=06 MDR=B202\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=0008 R2=0007 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=7  result=8}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & \cellcolor{pcc}\textbf{3250} & 920A & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0007 & \cellcolor{datac}0008 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 8 \hfill PC 02 \quad MUL R1, R1, R2}]
+\textcolor{dim}{IR} 3250 = 0011 001 001 010 000\\
+R1 $\leftarrow$ 8 $\times$ 7 = 56\\
+\textcolor{dim}{BUS} read M[02]=3250\\
+\textcolor{dim}{ALU} MUL A=0008 B=0007 $\rightarrow$ 0038\\
+PC=03 IR=3250 MAR=02 MDR=3250\\
+Z=0 N=0 C=0 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 \textcolor{wrt}{\textbf{R1=0038}} R2=0007 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=7  result=8}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & \cellcolor{pcc}\textbf{920A} & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0007 & \cellcolor{datac}0008 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 9 \hfill PC 03 \quad ST R1, result}]
+\textcolor{dim}{IR} 920A = 1001 001 0 00001010\\
+M[0x0A] (result) $\leftarrow$ R1 = 56\\
+\textcolor{dim}{BUS} read M[03]=920A, \textcolor{wrt}{write M[0A]=0038}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=04 IR=920A MAR=0A MDR=0038\\
+Z=0 N=0 C=0 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=0038 R2=0007 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=7  result=56}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & \cellcolor{pcc}\textbf{64BF} & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0007 & \cellcolor{wrt}\textcolor{white}{\textbf{0038}} & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 10 \hfill PC 04 \quad ADDI R2, R2, -1}]
+\textcolor{dim}{IR} 64BF = 0110 010 010 111111\\
+R2 $\leftarrow$ 7 + (-1) = 6\\
+\textcolor{dim}{BUS} read M[04]=64BF\\
+\textcolor{dim}{ALU} ADD A=0007 B=FFFF $\rightarrow$ 0006\\
+PC=05 IR=64BF MAR=04 MDR=64BF\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=0038 \textcolor{wrt}{\textbf{R2=0006}} R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=7  result=56}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & \cellcolor{pcc}\textbf{9409} & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0007 & \cellcolor{datac}0038 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 11 \hfill PC 05 \quad ST R2, n}]
+\textcolor{dim}{IR} 9409 = 1001 010 0 00001001\\
+M[0x09] (n) $\leftarrow$ R2 = 6\\
+\textcolor{dim}{BUS} read M[05]=9409, \textcolor{wrt}{write M[09]=0006}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=06 IR=9409 MAR=09 MDR=0006\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=0038 R2=0006 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=6  result=56}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & 9409 & \cellcolor{pcc}\textbf{B202} & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{wrt}\textcolor{white}{\textbf{0006}} & \cellcolor{datac}0038 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 12 \hfill PC 06 \quad BNE loop}]
+\textcolor{dim}{IR} B202 = 1011 0010 00000010\\
+PC $\leftarrow$ 0x02 (branch taken)\\
+\textcolor{dim}{BUS} read M[06]=B202\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=02 IR=B202 MAR=06 MDR=B202\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=0038 R2=0006 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=6  result=56}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & \cellcolor{pcc}\textbf{3250} & 920A & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0006 & \cellcolor{datac}0038 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 13 \hfill PC 02 \quad MUL R1, R1, R2}]
+\textcolor{dim}{IR} 3250 = 0011 001 001 010 000\\
+R1 $\leftarrow$ 56 $\times$ 6 = 336\\
+\textcolor{dim}{BUS} read M[02]=3250\\
+\textcolor{dim}{ALU} MUL A=0038 B=0006 $\rightarrow$ 0150\\
+PC=03 IR=3250 MAR=02 MDR=3250\\
+Z=0 N=0 C=0 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 \textcolor{wrt}{\textbf{R1=0150}} R2=0006 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=6  result=56}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & \cellcolor{pcc}\textbf{920A} & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0006 & \cellcolor{datac}0038 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 14 \hfill PC 03 \quad ST R1, result}]
+\textcolor{dim}{IR} 920A = 1001 001 0 00001010\\
+M[0x0A] (result) $\leftarrow$ R1 = 336\\
+\textcolor{dim}{BUS} read M[03]=920A, \textcolor{wrt}{write M[0A]=0150}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=04 IR=920A MAR=0A MDR=0150\\
+Z=0 N=0 C=0 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=0150 R2=0006 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=6  result=336}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & \cellcolor{pcc}\textbf{64BF} & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0006 & \cellcolor{wrt}\textcolor{white}{\textbf{0150}} & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 15 \hfill PC 04 \quad ADDI R2, R2, -1}]
+\textcolor{dim}{IR} 64BF = 0110 010 010 111111\\
+R2 $\leftarrow$ 6 + (-1) = 5\\
+\textcolor{dim}{BUS} read M[04]=64BF\\
+\textcolor{dim}{ALU} ADD A=0006 B=FFFF $\rightarrow$ 0005\\
+PC=05 IR=64BF MAR=04 MDR=64BF\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=0150 \textcolor{wrt}{\textbf{R2=0005}} R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=6  result=336}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & \cellcolor{pcc}\textbf{9409} & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0006 & \cellcolor{datac}0150 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 16 \hfill PC 05 \quad ST R2, n}]
+\textcolor{dim}{IR} 9409 = 1001 010 0 00001001\\
+M[0x09] (n) $\leftarrow$ R2 = 5\\
+\textcolor{dim}{BUS} read M[05]=9409, \textcolor{wrt}{write M[09]=0005}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=06 IR=9409 MAR=09 MDR=0005\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=0150 R2=0005 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=5  result=336}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & 9409 & \cellcolor{pcc}\textbf{B202} & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{wrt}\textcolor{white}{\textbf{0005}} & \cellcolor{datac}0150 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 17 \hfill PC 06 \quad BNE loop}]
+\textcolor{dim}{IR} B202 = 1011 0010 00000010\\
+PC $\leftarrow$ 0x02 (branch taken)\\
+\textcolor{dim}{BUS} read M[06]=B202\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=02 IR=B202 MAR=06 MDR=B202\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=0150 R2=0005 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=5  result=336}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & \cellcolor{pcc}\textbf{3250} & 920A & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0005 & \cellcolor{datac}0150 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 18 \hfill PC 02 \quad MUL R1, R1, R2}]
+\textcolor{dim}{IR} 3250 = 0011 001 001 010 000\\
+R1 $\leftarrow$ 336 $\times$ 5 = 1680\\
+\textcolor{dim}{BUS} read M[02]=3250\\
+\textcolor{dim}{ALU} MUL A=0150 B=0005 $\rightarrow$ 0690\\
+PC=03 IR=3250 MAR=02 MDR=3250\\
+Z=0 N=0 C=0 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 \textcolor{wrt}{\textbf{R1=0690}} R2=0005 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=5  result=336}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & \cellcolor{pcc}\textbf{920A} & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0005 & \cellcolor{datac}0150 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 19 \hfill PC 03 \quad ST R1, result}]
+\textcolor{dim}{IR} 920A = 1001 001 0 00001010\\
+M[0x0A] (result) $\leftarrow$ R1 = 1680\\
+\textcolor{dim}{BUS} read M[03]=920A, \textcolor{wrt}{write M[0A]=0690}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=04 IR=920A MAR=0A MDR=0690\\
+Z=0 N=0 C=0 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=0690 R2=0005 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=5  result=1680}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & \cellcolor{pcc}\textbf{64BF} & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0005 & \cellcolor{wrt}\textcolor{white}{\textbf{0690}} & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 20 \hfill PC 04 \quad ADDI R2, R2, -1}]
+\textcolor{dim}{IR} 64BF = 0110 010 010 111111\\
+R2 $\leftarrow$ 5 + (-1) = 4\\
+\textcolor{dim}{BUS} read M[04]=64BF\\
+\textcolor{dim}{ALU} ADD A=0005 B=FFFF $\rightarrow$ 0004\\
+PC=05 IR=64BF MAR=04 MDR=64BF\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=0690 \textcolor{wrt}{\textbf{R2=0004}} R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=5  result=1680}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & \cellcolor{pcc}\textbf{9409} & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0005 & \cellcolor{datac}0690 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 21 \hfill PC 05 \quad ST R2, n}]
+\textcolor{dim}{IR} 9409 = 1001 010 0 00001001\\
+M[0x09] (n) $\leftarrow$ R2 = 4\\
+\textcolor{dim}{BUS} read M[05]=9409, \textcolor{wrt}{write M[09]=0004}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=06 IR=9409 MAR=09 MDR=0004\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=0690 R2=0004 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=4  result=1680}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & 9409 & \cellcolor{pcc}\textbf{B202} & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{wrt}\textcolor{white}{\textbf{0004}} & \cellcolor{datac}0690 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 22 \hfill PC 06 \quad BNE loop}]
+\textcolor{dim}{IR} B202 = 1011 0010 00000010\\
+PC $\leftarrow$ 0x02 (branch taken)\\
+\textcolor{dim}{BUS} read M[06]=B202\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=02 IR=B202 MAR=06 MDR=B202\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=0690 R2=0004 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=4  result=1680}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & \cellcolor{pcc}\textbf{3250} & 920A & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0004 & \cellcolor{datac}0690 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 23 \hfill PC 02 \quad MUL R1, R1, R2}]
+\textcolor{dim}{IR} 3250 = 0011 001 001 010 000\\
+R1 $\leftarrow$ 1680 $\times$ 4 = 6720\\
+\textcolor{dim}{BUS} read M[02]=3250\\
+\textcolor{dim}{ALU} MUL A=0690 B=0004 $\rightarrow$ 1A40\\
+PC=03 IR=3250 MAR=02 MDR=3250\\
+Z=0 N=0 C=0 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 \textcolor{wrt}{\textbf{R1=1A40}} R2=0004 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=4  result=1680}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & \cellcolor{pcc}\textbf{920A} & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0004 & \cellcolor{datac}0690 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 24 \hfill PC 03 \quad ST R1, result}]
+\textcolor{dim}{IR} 920A = 1001 001 0 00001010\\
+M[0x0A] (result) $\leftarrow$ R1 = 6720\\
+\textcolor{dim}{BUS} read M[03]=920A, \textcolor{wrt}{write M[0A]=1A40}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=04 IR=920A MAR=0A MDR=1A40\\
+Z=0 N=0 C=0 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=1A40 R2=0004 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=4  result=6720}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & \cellcolor{pcc}\textbf{64BF} & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0004 & \cellcolor{wrt}\textcolor{white}{\textbf{1A40}} & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 25 \hfill PC 04 \quad ADDI R2, R2, -1}]
+\textcolor{dim}{IR} 64BF = 0110 010 010 111111\\
+R2 $\leftarrow$ 4 + (-1) = 3\\
+\textcolor{dim}{BUS} read M[04]=64BF\\
+\textcolor{dim}{ALU} ADD A=0004 B=FFFF $\rightarrow$ 0003\\
+PC=05 IR=64BF MAR=04 MDR=64BF\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=1A40 \textcolor{wrt}{\textbf{R2=0003}} R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=4  result=6720}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & \cellcolor{pcc}\textbf{9409} & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0004 & \cellcolor{datac}1A40 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 26 \hfill PC 05 \quad ST R2, n}]
+\textcolor{dim}{IR} 9409 = 1001 010 0 00001001\\
+M[0x09] (n) $\leftarrow$ R2 = 3\\
+\textcolor{dim}{BUS} read M[05]=9409, \textcolor{wrt}{write M[09]=0003}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=06 IR=9409 MAR=09 MDR=0003\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=1A40 R2=0003 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=3  result=6720}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & 9409 & \cellcolor{pcc}\textbf{B202} & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{wrt}\textcolor{white}{\textbf{0003}} & \cellcolor{datac}1A40 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 27 \hfill PC 06 \quad BNE loop}]
+\textcolor{dim}{IR} B202 = 1011 0010 00000010\\
+PC $\leftarrow$ 0x02 (branch taken)\\
+\textcolor{dim}{BUS} read M[06]=B202\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=02 IR=B202 MAR=06 MDR=B202\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=1A40 R2=0003 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=3  result=6720}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & \cellcolor{pcc}\textbf{3250} & 920A & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0003 & \cellcolor{datac}1A40 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 28 \hfill PC 02 \quad MUL R1, R1, R2}]
+\textcolor{dim}{IR} 3250 = 0011 001 001 010 000\\
+R1 $\leftarrow$ 6720 $\times$ 3 = 20160\\
+\textcolor{dim}{BUS} read M[02]=3250\\
+\textcolor{dim}{ALU} MUL A=1A40 B=0003 $\rightarrow$ 4EC0\\
+PC=03 IR=3250 MAR=02 MDR=3250\\
+Z=0 N=0 C=0 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 \textcolor{wrt}{\textbf{R1=4EC0}} R2=0003 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=3  result=6720}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & \cellcolor{pcc}\textbf{920A} & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0003 & \cellcolor{datac}1A40 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 29 \hfill PC 03 \quad ST R1, result}]
+\textcolor{dim}{IR} 920A = 1001 001 0 00001010\\
+M[0x0A] (result) $\leftarrow$ R1 = 20160\\
+\textcolor{dim}{BUS} read M[03]=920A, \textcolor{wrt}{write M[0A]=4EC0}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=04 IR=920A MAR=0A MDR=4EC0\\
+Z=0 N=0 C=0 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=4EC0 R2=0003 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=3  result=20160}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & \cellcolor{pcc}\textbf{64BF} & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0003 & \cellcolor{wrt}\textcolor{white}{\textbf{4EC0}} & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 30 \hfill PC 04 \quad ADDI R2, R2, -1}]
+\textcolor{dim}{IR} 64BF = 0110 010 010 111111\\
+R2 $\leftarrow$ 3 + (-1) = 2\\
+\textcolor{dim}{BUS} read M[04]=64BF\\
+\textcolor{dim}{ALU} ADD A=0003 B=FFFF $\rightarrow$ 0002\\
+PC=05 IR=64BF MAR=04 MDR=64BF\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=4EC0 \textcolor{wrt}{\textbf{R2=0002}} R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=3  result=20160}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & \cellcolor{pcc}\textbf{9409} & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0003 & \cellcolor{datac}4EC0 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 31 \hfill PC 05 \quad ST R2, n}]
+\textcolor{dim}{IR} 9409 = 1001 010 0 00001001\\
+M[0x09] (n) $\leftarrow$ R2 = 2\\
+\textcolor{dim}{BUS} read M[05]=9409, \textcolor{wrt}{write M[09]=0002}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=06 IR=9409 MAR=09 MDR=0002\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=4EC0 R2=0002 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=2  result=20160}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & 9409 & \cellcolor{pcc}\textbf{B202} & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{wrt}\textcolor{white}{\textbf{0002}} & \cellcolor{datac}4EC0 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 32 \hfill PC 06 \quad BNE loop}]
+\textcolor{dim}{IR} B202 = 1011 0010 00000010\\
+PC $\leftarrow$ 0x02 (branch taken)\\
+\textcolor{dim}{BUS} read M[06]=B202\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=02 IR=B202 MAR=06 MDR=B202\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=4EC0 R2=0002 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=2  result=20160}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & \cellcolor{pcc}\textbf{3250} & 920A & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0002 & \cellcolor{datac}4EC0 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 33 \hfill PC 02 \quad MUL R1, R1, R2}]
+\textcolor{dim}{IR} 3250 = 0011 001 001 010 000\\
+R1 $\leftarrow$ 20160 $\times$ 2 = 40320\\
+\textcolor{dim}{BUS} read M[02]=3250\\
+\textcolor{dim}{ALU} MUL A=4EC0 B=0002 $\rightarrow$ 9D80\\
+PC=03 IR=3250 MAR=02 MDR=3250\\
+Z=0 N=1 C=0 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 \textcolor{wrt}{\textbf{R1=9D80}} R2=0002 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=2  result=20160}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & \cellcolor{pcc}\textbf{920A} & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0002 & \cellcolor{datac}4EC0 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 34 \hfill PC 03 \quad ST R1, result}]
+\textcolor{dim}{IR} 920A = 1001 001 0 00001010\\
+M[0x0A] (result) $\leftarrow$ R1 = 40320\\
+\textcolor{dim}{BUS} read M[03]=920A, \textcolor{wrt}{write M[0A]=9D80}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=04 IR=920A MAR=0A MDR=9D80\\
+Z=0 N=1 C=0 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=9D80 R2=0002 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=2  result=40320}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & \cellcolor{pcc}\textbf{64BF} & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0002 & \cellcolor{wrt}\textcolor{white}{\textbf{9D80}} & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 35 \hfill PC 04 \quad ADDI R2, R2, -1}]
+\textcolor{dim}{IR} 64BF = 0110 010 010 111111\\
+R2 $\leftarrow$ 2 + (-1) = 1\\
+\textcolor{dim}{BUS} read M[04]=64BF\\
+\textcolor{dim}{ALU} ADD A=0002 B=FFFF $\rightarrow$ 0001\\
+PC=05 IR=64BF MAR=04 MDR=64BF\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=9D80 \textcolor{wrt}{\textbf{R2=0001}} R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=2  result=40320}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & \cellcolor{pcc}\textbf{9409} & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0002 & \cellcolor{datac}9D80 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 36 \hfill PC 05 \quad ST R2, n}]
+\textcolor{dim}{IR} 9409 = 1001 010 0 00001001\\
+M[0x09] (n) $\leftarrow$ R2 = 1\\
+\textcolor{dim}{BUS} read M[05]=9409, \textcolor{wrt}{write M[09]=0001}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=06 IR=9409 MAR=09 MDR=0001\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=9D80 R2=0001 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=1  result=40320}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & 9409 & \cellcolor{pcc}\textbf{B202} & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{wrt}\textcolor{white}{\textbf{0001}} & \cellcolor{datac}9D80 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 37 \hfill PC 06 \quad BNE loop}]
+\textcolor{dim}{IR} B202 = 1011 0010 00000010\\
+PC $\leftarrow$ 0x02 (branch taken)\\
+\textcolor{dim}{BUS} read M[06]=B202\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=02 IR=B202 MAR=06 MDR=B202\\
+Z=0 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=9D80 R2=0001 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=1  result=40320}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & \cellcolor{pcc}\textbf{3250} & 920A & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0001 & \cellcolor{datac}9D80 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 38 \hfill PC 02 \quad MUL R1, R1, R2}]
+\textcolor{dim}{IR} 3250 = 0011 001 001 010 000\\
+R1 $\leftarrow$ 40320 $\times$ 1 = 40320\\
+\textcolor{dim}{BUS} read M[02]=3250\\
+\textcolor{dim}{ALU} MUL A=9D80 B=0001 $\rightarrow$ 9D80\\
+PC=03 IR=3250 MAR=02 MDR=3250\\
+Z=0 N=1 C=0 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 \textcolor{wrt}{\textbf{R1=9D80}} R2=0001 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=1  result=40320}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & \cellcolor{pcc}\textbf{920A} & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0001 & \cellcolor{datac}9D80 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 39 \hfill PC 03 \quad ST R1, result}]
+\textcolor{dim}{IR} 920A = 1001 001 0 00001010\\
+M[0x0A] (result) $\leftarrow$ R1 = 40320\\
+\textcolor{dim}{BUS} read M[03]=920A, \textcolor{wrt}{write M[0A]=9D80}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=04 IR=920A MAR=0A MDR=9D80\\
+Z=0 N=1 C=0 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=9D80 R2=0001 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=1  result=40320}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & \cellcolor{pcc}\textbf{64BF} & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0001 & \cellcolor{wrt}\textcolor{white}{\textbf{9D80}} & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 40 \hfill PC 04 \quad ADDI R2, R2, -1}]
+\textcolor{dim}{IR} 64BF = 0110 010 010 111111\\
+R2 $\leftarrow$ 1 + (-1) = 0\\
+\textcolor{dim}{BUS} read M[04]=64BF\\
+\textcolor{dim}{ALU} ADD A=0001 B=FFFF $\rightarrow$ 0000\\
+PC=05 IR=64BF MAR=04 MDR=64BF\\
+Z=1 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=9D80 \textcolor{wrt}{\textbf{R2=0000}} R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=1  result=40320}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & \cellcolor{pcc}\textbf{9409} & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0001 & \cellcolor{datac}9D80 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 41 \hfill PC 05 \quad ST R2, n}]
+\textcolor{dim}{IR} 9409 = 1001 010 0 00001001\\
+M[0x09] (n) $\leftarrow$ R2 = 0\\
+\textcolor{dim}{BUS} read M[05]=9409, \textcolor{wrt}{write M[09]=0000}\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=06 IR=9409 MAR=09 MDR=0000\\
+Z=1 N=0 C=1 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=9D80 R2=0000 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=0  result=40320}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & 9409 & \cellcolor{pcc}\textbf{B202} & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{wrt}\textcolor{white}{\textbf{0000}} & \cellcolor{datac}9D80 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 42 \hfill PC 06 \quad BNE loop}]
+\textcolor{dim}{IR} B202 = 1011 0010 00000010\\
+branch not taken\\
+\textcolor{dim}{BUS} read M[06]=B202\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=07 IR=B202 MAR=06 MDR=B202\\
+Z=1 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=9D80 R2=0000 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=0  result=40320}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & 9409 & B202 & \cellcolor{pcc}\textbf{F200}\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0000 & \cellcolor{datac}9D80 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Step 43 \hfill PC 07 \quad OUT R1}]
+\textcolor{dim}{IR} F200 = 1111 001 0 00000000\\
+output R1 = 40320 \hfill \colorbox{outc}{\textbf{OUTPUT: 40320}}\\
+\textcolor{dim}{BUS} read M[07]=F200, out 40320\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=08 IR=F200 MAR=07 MDR=F200\\
+Z=1 N=0 C=1 V=0 \hfill \textcolor{dim}{4 clock cycles}\\
+R0=0000 R1=9D80 R2=0000 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=0  result=40320}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & \cellcolor{pcc}\textbf{0000} & \cellcolor{datac}0000 & \cellcolor{datac}9D80 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Step 44 \hfill PC 08 \quad HALT}]
+\textcolor{dim}{IR} 0000 = 0000 000000000000\\
+processor halted\\
+\textcolor{dim}{BUS} read M[08]=0000\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=09 IR=0000 MAR=08 MDR=0000\\
+Z=1 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=9D80 R2=0000 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=0  result=40320}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0000 & \cellcolor{datac}9D80 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}

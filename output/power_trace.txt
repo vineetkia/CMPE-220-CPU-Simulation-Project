@@ -1,0 +1,701 @@
+==============================================================================
+PHASE 1: ASSEMBLE   power.c -> machine code
+  Each instruction name is looked up in the ISA table (OPCODE_TABLE in isa.c).
+  The table gives the opcode and the format. The operands fill the other bits.
+
+  ADDR  SOURCE                 LOOKUP               MACHINE CODE (binary)    HEX
+  0x00  LI SP, stack_top       LI   -> 0111 (L)     0111 111 000101000       7E28
+  0x01  CALL main              CALL -> 1100 (B)     1100 0000 00010010       C012
+  0x02  HALT                   HALT -> 0000 (N)     0000 000000000000        0000
+  0x03  LI R1, 1               LI   -> 0111 (L)     0111 001 000000001       7201
+  0x04  ST R1, power.result    ST   -> 1001 (M)     1001 001 0 00011110      921E
+  0x05  LD R1, power.exp       LD   -> 1000 (M)     1000 001 0 00011101      821D
+  0x06  CMP R1, R0             CMP  -> 1010 (R)     1010 000 001 000 000     A040
+  0x07  BLE power.endwhile1    BLE  -> 1011 (B)     1011 0110 00010000       B610
+  0x08  LD R1, power.result    LD   -> 1000 (M)     1000 001 0 00011110      821E
+  0x09  LD R2, power.base      LD   -> 1000 (M)     1000 010 0 00011100      841C
+  0x0A  MUL R1, R1, R2         MUL  -> 0011 (R)     0011 001 001 010 000     3250
+  0x0B  ST R1, power.result    ST   -> 1001 (M)     1001 001 0 00011110      921E
+  0x0C  LD R1, power.exp       LD   -> 1000 (M)     1000 001 0 00011101      821D
+  0x0D  ADDI R1, R1, -1        ADDI -> 0110 (I)     0110 001 001 111111      627F
+  0x0E  ST R1, power.exp       ST   -> 1001 (M)     1001 001 0 00011101      921D
+  0x0F  JMP power.while1       JMP  -> 1011 (B)     1011 0000 00000101       B005
+  0x10  LD R1, power.result    LD   -> 1000 (M)     1000 001 0 00011110      821E
+  0x11  RET                    RET  -> 1101 (N)     1101 000000000000        D000
+  0x12  LI R1, 8               LI   -> 0111 (L)     0111 001 000001000       7208
+  0x13  LI R2, 2               LI   -> 0111 (L)     0111 010 000000010       7402
+  0x14  ST R1, power.base      ST   -> 1001 (M)     1001 001 0 00011100      921C
+  0x15  ST R2, power.exp       ST   -> 1001 (M)     1001 010 0 00011101      941D
+  0x16  CALL power             CALL -> 1100 (B)     1100 0000 00000011       C003
+  0x17  ST R1, main.x          ST   -> 1001 (M)     1001 001 0 00011111      921F
+  0x18  LD R1, main.x          LD   -> 1000 (M)     1000 001 0 00011111      821F
+  0x19  OUT R1                 OUT  -> 1111 (S)     1111 001 0 00000000      F200
+  0x1A  LI R1, 0               LI   -> 0111 (L)     0111 001 000000000       7200
+  0x1B  RET                    RET  -> 1101 (N)     1101 000000000000        D000
+  0x1C  .word 0                data word            0000000000000000         0000
+  0x1D  .word 0                data word            0000000000000000         0000
+  0x1E  .word 0                data word            0000000000000000         0000
+  0x1F  .word 0                data word            0000000000000000         0000
+  0x20  .space 8               empty words          8 words of 0000
+
+  Labels: _start=0x00, power=0x03, power.while1=0x05, power.endwhile1=0x10, main=0x12, power.base=0x1C, power.exp=0x1D, power.result=0x1E, main.x=0x1F, stack=0x20, stack_top=0x28
+==============================================================================
+PHASE 2: LOAD   the loader writes each word into RAM over the system bus
+  RAM before loading: all 256 words are 0000
+
+  LOAD  ADDRESS BUS  DATA BUS  CONTROL BUS  RAM WORD           WHAT IT IS
+  1     0x00         7E28      MEM WRITE    RAM[0x00] = 7E28  LI SP, 40
+  2     0x01         C012      MEM WRITE    RAM[0x01] = C012  CALL main
+  3     0x02         0000      MEM WRITE    RAM[0x02] = 0000  HALT
+  4     0x03         7201      MEM WRITE    RAM[0x03] = 7201  LI R1, 1
+  5     0x04         921E      MEM WRITE    RAM[0x04] = 921E  ST R1, power.result
+  6     0x05         821D      MEM WRITE    RAM[0x05] = 821D  LD R1, power.exp
+  7     0x06         A040      MEM WRITE    RAM[0x06] = A040  CMP R1, R0
+  8     0x07         B610      MEM WRITE    RAM[0x07] = B610  BLE power.endwhile1
+  9     0x08         821E      MEM WRITE    RAM[0x08] = 821E  LD R1, power.result
+  10    0x09         841C      MEM WRITE    RAM[0x09] = 841C  LD R2, power.base
+  11    0x0A         3250      MEM WRITE    RAM[0x0A] = 3250  MUL R1, R1, R2
+  12    0x0B         921E      MEM WRITE    RAM[0x0B] = 921E  ST R1, power.result
+  13    0x0C         821D      MEM WRITE    RAM[0x0C] = 821D  LD R1, power.exp
+  14    0x0D         627F      MEM WRITE    RAM[0x0D] = 627F  ADDI R1, R1, -1
+  15    0x0E         921D      MEM WRITE    RAM[0x0E] = 921D  ST R1, power.exp
+  16    0x0F         B005      MEM WRITE    RAM[0x0F] = B005  JMP power.while1
+  17    0x10         821E      MEM WRITE    RAM[0x10] = 821E  LD R1, power.result
+  18    0x11         D000      MEM WRITE    RAM[0x11] = D000  RET
+  19    0x12         7208      MEM WRITE    RAM[0x12] = 7208  LI R1, 8
+  20    0x13         7402      MEM WRITE    RAM[0x13] = 7402  LI R2, 2
+  21    0x14         921C      MEM WRITE    RAM[0x14] = 921C  ST R1, power.base
+  22    0x15         941D      MEM WRITE    RAM[0x15] = 941D  ST R2, power.exp
+  23    0x16         C003      MEM WRITE    RAM[0x16] = C003  CALL power
+  24    0x17         921F      MEM WRITE    RAM[0x17] = 921F  ST R1, main.x
+  25    0x18         821F      MEM WRITE    RAM[0x18] = 821F  LD R1, main.x
+  26    0x19         F200      MEM WRITE    RAM[0x19] = F200  OUT R1
+  27    0x1A         7200      MEM WRITE    RAM[0x1A] = 7200  LI R1, 0
+  28    0x1B         D000      MEM WRITE    RAM[0x1B] = D000  RET
+  29    0x1C         0000      MEM WRITE    RAM[0x1C] = 0000  data (power.base)
+  30    0x1D         0000      MEM WRITE    RAM[0x1D] = 0000  data (power.exp)
+  31    0x1E         0000      MEM WRITE    RAM[0x1E] = 0000  data (power.result)
+  32    0x1F         0000      MEM WRITE    RAM[0x1F] = 0000  data (main.x)
+  33    0x20         0000      MEM WRITE    RAM[0x20] = 0000  stack space
+  34    0x21         0000      MEM WRITE    RAM[0x21] = 0000  stack space
+  35    0x22         0000      MEM WRITE    RAM[0x22] = 0000  stack space
+  36    0x23         0000      MEM WRITE    RAM[0x23] = 0000  stack space
+  37    0x24         0000      MEM WRITE    RAM[0x24] = 0000  stack space
+  38    0x25         0000      MEM WRITE    RAM[0x25] = 0000  stack space
+  39    0x26         0000      MEM WRITE    RAM[0x26] = 0000  stack space
+  40    0x27         0000      MEM WRITE    RAM[0x27] = 0000  stack space
+
+  RAM after loading (each [....] word was just written by the loader):
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00  [7E28][C012][0000][7201][921E][821D][A040][B610]  code
+  0x08  [821E][841C][3250][921E][821D][627F][921D][B005]  code
+  0x10  [821E][D000][7208][7402][921C][941D][C003][921F]  code
+  0x18  [821F][F200][7200][D000][0000][0000][0000][0000]  code/data
+  0x20  [0000][0000][0000][0000][0000][0000][0000][0000]  stack
+
+  CPU reset: PC = 0x00 (the entry point), all registers and flags are 0
+==============================================================================
+PHASE 3: EXECUTE   fetch, decode, execute until HALT
+==============================================================================
+STEP 0  | program loaded from power.c
+  cpu    : PC=00 IR=0000 MAR=00 MDR=0000   flags Z=0 N=0 C=0 V=0
+  regs   : R0=0000  R1=0000  R2=0000  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : power.base=0  power.exp=0  power.result=0  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00  >7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0000  0000  0000  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0000  0000   stack
+==============================================================================
+STEP 1  | PC 0x00 | IR 7E28 = 0111 111 000101000  | LI SP, 40
+  result : SP <- 40
+  bus    : fetch: read M[0x00] = 7E28
+  alu    : not used
+  cpu    : PC=01 IR=7E28 MAR=00 MDR=7E28   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0000  R2=0000  R3=0000  R4=0000  R5=0000  R6=0000  SP=0028*
+  vars   : power.base=0  power.exp=0  power.result=0  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28 >C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0000  0000  0000  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0000  0000   stack
+==============================================================================
+STEP 2  | PC 0x01 | IR C012 = 1100 0000 00010010  | CALL main
+  result : push return address 0x02, PC <- 0x12
+  bus    : fetch: read M[0x01] = C012 | execute: write M[0x27] = 0002
+  alu    : not used
+  cpu    : PC=12 IR=C012 MAR=27 MDR=0002   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0000  R2=0000  R3=0000  R4=0000  R5=0000  R6=0000  SP=0027*
+  vars   : power.base=0  power.exp=0  power.result=0  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000 >7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0000  0000  0000  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0000 [0002]  stack
+==============================================================================
+STEP 3  | PC 0x12 | IR 7208 = 0111 001 000001000  | LI R1, 8
+  result : R1 <- 8
+  bus    : fetch: read M[0x12] = 7208
+  alu    : not used
+  cpu    : PC=13 IR=7208 MAR=12 MDR=7208   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0008* R2=0000  R3=0000  R4=0000  R5=0000  R6=0000  SP=0027 
+  vars   : power.base=0  power.exp=0  power.result=0  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208 >7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0000  0000  0000  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0000  0002   stack
+==============================================================================
+STEP 4  | PC 0x13 | IR 7402 = 0111 010 000000010  | LI R2, 2
+  result : R2 <- 2
+  bus    : fetch: read M[0x13] = 7402
+  alu    : not used
+  cpu    : PC=14 IR=7402 MAR=13 MDR=7402   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0008  R2=0002* R3=0000  R4=0000  R5=0000  R6=0000  SP=0027 
+  vars   : power.base=0  power.exp=0  power.result=0  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402 >921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0000  0000  0000  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0000  0002   stack
+==============================================================================
+STEP 5  | PC 0x14 | IR 921C = 1001 001 0 00011100 | ST R1, power.base
+  result : M[0x1C] (power.base) <- R1 = 8
+  bus    : fetch: read M[0x14] = 921C | execute: write M[0x1C] = 0008
+  alu    : not used
+  cpu    : PC=15 IR=921C MAR=1C MDR=0008   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0008  R2=0002  R3=0000  R4=0000  R5=0000  R6=0000  SP=0027 
+  vars   : power.base=8  power.exp=0  power.result=0  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C >941D  C003  921F   code
+  0x18   821F  F200  7200  D000 [0008] 0000  0000  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0000  0002   stack
+==============================================================================
+STEP 6  | PC 0x15 | IR 941D = 1001 010 0 00011101 | ST R2, power.exp
+  result : M[0x1D] (power.exp) <- R2 = 2
+  bus    : fetch: read M[0x15] = 941D | execute: write M[0x1D] = 0002
+  alu    : not used
+  cpu    : PC=16 IR=941D MAR=1D MDR=0002   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0008  R2=0002  R3=0000  R4=0000  R5=0000  R6=0000  SP=0027 
+  vars   : power.base=8  power.exp=2  power.result=0  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D >C003  921F   code
+  0x18   821F  F200  7200  D000  0008 [0002] 0000  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0000  0002   stack
+==============================================================================
+STEP 7  | PC 0x16 | IR C003 = 1100 0000 00000011  | CALL power
+  result : push return address 0x17, PC <- 0x03
+  bus    : fetch: read M[0x16] = C003 | execute: write M[0x26] = 0017
+  alu    : not used
+  cpu    : PC=03 IR=C003 MAR=26 MDR=0017   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0008  R2=0002  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026*
+  vars   : power.base=8  power.exp=2  power.result=0  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000 >7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0002  0000  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000 [0017] 0002   stack
+==============================================================================
+STEP 8  | PC 0x03 | IR 7201 = 0111 001 000000001  | LI R1, 1
+  result : R1 <- 1
+  bus    : fetch: read M[0x03] = 7201
+  alu    : not used
+  cpu    : PC=04 IR=7201 MAR=03 MDR=7201   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0001* R2=0002  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=2  power.result=0  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201 >921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0002  0000  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 9  | PC 0x04 | IR 921E = 1001 001 0 00011110 | ST R1, power.result
+  result : M[0x1E] (power.result) <- R1 = 1
+  bus    : fetch: read M[0x04] = 921E | execute: write M[0x1E] = 0001
+  alu    : not used
+  cpu    : PC=05 IR=921E MAR=1E MDR=0001   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0001  R2=0002  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=2  power.result=1  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E >821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0002 [0001] 0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 10 | PC 0x05 | IR 821D = 1000 001 0 00011101 | LD R1, power.exp
+  result : R1 <- M[0x1D] (power.exp) = 2
+  bus    : fetch: read M[0x05] = 821D | execute: read M[0x1D] = 0002
+  alu    : not used
+  cpu    : PC=06 IR=821D MAR=1D MDR=0002   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0002* R2=0002  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=2  power.result=1  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D >A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0002  0001  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 11 | PC 0x06 | IR A040 = 1010 000 001 000 000 | CMP R1, R0
+  result : compare 2 with 0, set flags
+  bus    : fetch: read M[0x06] = A040
+  alu    : SUB  A=0002  B=0000  ->  0002
+  cpu    : PC=07 IR=A040 MAR=06 MDR=A040   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0002  R2=0002  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=2  power.result=1  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040 >B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0002  0001  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 12 | PC 0x07 | IR B610 = 1011 0110 00010000  | BLE power.endwhile1
+  result : branch not taken
+  bus    : fetch: read M[0x07] = B610
+  alu    : not used
+  cpu    : PC=08 IR=B610 MAR=07 MDR=B610   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0002  R2=0002  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=2  power.result=1  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08  >821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0002  0001  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 13 | PC 0x08 | IR 821E = 1000 001 0 00011110 | LD R1, power.result
+  result : R1 <- M[0x1E] (power.result) = 1
+  bus    : fetch: read M[0x08] = 821E | execute: read M[0x1E] = 0001
+  alu    : not used
+  cpu    : PC=09 IR=821E MAR=1E MDR=0001   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0001* R2=0002  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=2  power.result=1  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E >841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0002  0001  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 14 | PC 0x09 | IR 841C = 1000 010 0 00011100 | LD R2, power.base
+  result : R2 <- M[0x1C] (power.base) = 8
+  bus    : fetch: read M[0x09] = 841C | execute: read M[0x1C] = 0008
+  alu    : not used
+  cpu    : PC=0A IR=841C MAR=1C MDR=0008   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0001  R2=0008* R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=2  power.result=1  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C >3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0002  0001  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 15 | PC 0x0A | IR 3250 = 0011 001 001 010 000 | MUL R1, R1, R2
+  result : R1 <- 1 x 8 = 8
+  bus    : fetch: read M[0x0A] = 3250
+  alu    : MUL  A=0001  B=0008  ->  0008
+  cpu    : PC=0B IR=3250 MAR=0A MDR=3250   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0008* R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=2  power.result=1  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250 >921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0002  0001  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 16 | PC 0x0B | IR 921E = 1001 001 0 00011110 | ST R1, power.result
+  result : M[0x1E] (power.result) <- R1 = 8
+  bus    : fetch: read M[0x0B] = 921E | execute: write M[0x1E] = 0008
+  alu    : not used
+  cpu    : PC=0C IR=921E MAR=1E MDR=0008   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0008  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=2  power.result=8  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E >821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0002 [0008] 0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 17 | PC 0x0C | IR 821D = 1000 001 0 00011101 | LD R1, power.exp
+  result : R1 <- M[0x1D] (power.exp) = 2
+  bus    : fetch: read M[0x0C] = 821D | execute: read M[0x1D] = 0002
+  alu    : not used
+  cpu    : PC=0D IR=821D MAR=1D MDR=0002   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0002* R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=2  power.result=8  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D >627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0002  0008  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 18 | PC 0x0D | IR 627F = 0110 001 001 111111 | ADDI R1, R1, -1
+  result : R1 <- 2 + (-1) = 1
+  bus    : fetch: read M[0x0D] = 627F
+  alu    : ADD  A=0002  B=FFFF  ->  0001
+  cpu    : PC=0E IR=627F MAR=0D MDR=627F   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=0001* R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=2  power.result=8  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F >921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0002  0008  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 19 | PC 0x0E | IR 921D = 1001 001 0 00011101 | ST R1, power.exp
+  result : M[0x1D] (power.exp) <- R1 = 1
+  bus    : fetch: read M[0x0E] = 921D | execute: write M[0x1D] = 0001
+  alu    : not used
+  cpu    : PC=0F IR=921D MAR=1D MDR=0001   flags Z=0 N=0 C=1 V=0   cycles 4
+  regs   : R0=0000  R1=0001  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=1  power.result=8  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D >B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008 [0001] 0008  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 20 | PC 0x0F | IR B005 = 1011 0000 00000101  | JMP power.while1
+  result : PC <- 0x05 (jump)
+  bus    : fetch: read M[0x0F] = B005
+  alu    : not used
+  cpu    : PC=05 IR=B005 MAR=0F MDR=B005   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=0001  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=1  power.result=8  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E >821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0001  0008  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 21 | PC 0x05 | IR 821D = 1000 001 0 00011101 | LD R1, power.exp
+  result : R1 <- M[0x1D] (power.exp) = 1
+  bus    : fetch: read M[0x05] = 821D | execute: read M[0x1D] = 0001
+  alu    : not used
+  cpu    : PC=06 IR=821D MAR=1D MDR=0001   flags Z=0 N=0 C=1 V=0   cycles 4
+  regs   : R0=0000  R1=0001* R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=1  power.result=8  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D >A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0001  0008  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 22 | PC 0x06 | IR A040 = 1010 000 001 000 000 | CMP R1, R0
+  result : compare 1 with 0, set flags
+  bus    : fetch: read M[0x06] = A040
+  alu    : SUB  A=0001  B=0000  ->  0001
+  cpu    : PC=07 IR=A040 MAR=06 MDR=A040   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0001  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=1  power.result=8  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040 >B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0001  0008  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 23 | PC 0x07 | IR B610 = 1011 0110 00010000  | BLE power.endwhile1
+  result : branch not taken
+  bus    : fetch: read M[0x07] = B610
+  alu    : not used
+  cpu    : PC=08 IR=B610 MAR=07 MDR=B610   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0001  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=1  power.result=8  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08  >821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0001  0008  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 24 | PC 0x08 | IR 821E = 1000 001 0 00011110 | LD R1, power.result
+  result : R1 <- M[0x1E] (power.result) = 8
+  bus    : fetch: read M[0x08] = 821E | execute: read M[0x1E] = 0008
+  alu    : not used
+  cpu    : PC=09 IR=821E MAR=1E MDR=0008   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0008* R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=1  power.result=8  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E >841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0001  0008  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 25 | PC 0x09 | IR 841C = 1000 010 0 00011100 | LD R2, power.base
+  result : R2 <- M[0x1C] (power.base) = 8
+  bus    : fetch: read M[0x09] = 841C | execute: read M[0x1C] = 0008
+  alu    : not used
+  cpu    : PC=0A IR=841C MAR=1C MDR=0008   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0008  R2=0008* R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=1  power.result=8  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C >3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0001  0008  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 26 | PC 0x0A | IR 3250 = 0011 001 001 010 000 | MUL R1, R1, R2
+  result : R1 <- 8 x 8 = 64
+  bus    : fetch: read M[0x0A] = 3250
+  alu    : MUL  A=0008  B=0008  ->  0040
+  cpu    : PC=0B IR=3250 MAR=0A MDR=3250   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0040* R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=1  power.result=8  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250 >921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0001  0008  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 27 | PC 0x0B | IR 921E = 1001 001 0 00011110 | ST R1, power.result
+  result : M[0x1E] (power.result) <- R1 = 64
+  bus    : fetch: read M[0x0B] = 921E | execute: write M[0x1E] = 0040
+  alu    : not used
+  cpu    : PC=0C IR=921E MAR=1E MDR=0040   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0040  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=1  power.result=64  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E >821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0001 [0040] 0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 28 | PC 0x0C | IR 821D = 1000 001 0 00011101 | LD R1, power.exp
+  result : R1 <- M[0x1D] (power.exp) = 1
+  bus    : fetch: read M[0x0C] = 821D | execute: read M[0x1D] = 0001
+  alu    : not used
+  cpu    : PC=0D IR=821D MAR=1D MDR=0001   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0001* R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=1  power.result=64  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D >627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0001  0040  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 29 | PC 0x0D | IR 627F = 0110 001 001 111111 | ADDI R1, R1, -1
+  result : R1 <- 1 + (-1) = 0
+  bus    : fetch: read M[0x0D] = 627F
+  alu    : ADD  A=0001  B=FFFF  ->  0000
+  cpu    : PC=0E IR=627F MAR=0D MDR=627F   flags Z=1 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=0000* R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=1  power.result=64  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F >921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0001  0040  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 30 | PC 0x0E | IR 921D = 1001 001 0 00011101 | ST R1, power.exp
+  result : M[0x1D] (power.exp) <- R1 = 0
+  bus    : fetch: read M[0x0E] = 921D | execute: write M[0x1D] = 0000
+  alu    : not used
+  cpu    : PC=0F IR=921D MAR=1D MDR=0000   flags Z=1 N=0 C=1 V=0   cycles 4
+  regs   : R0=0000  R1=0000  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=0  power.result=64  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D >B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008 [0000] 0040  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 31 | PC 0x0F | IR B005 = 1011 0000 00000101  | JMP power.while1
+  result : PC <- 0x05 (jump)
+  bus    : fetch: read M[0x0F] = B005
+  alu    : not used
+  cpu    : PC=05 IR=B005 MAR=0F MDR=B005   flags Z=1 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=0000  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=0  power.result=64  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E >821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0000  0040  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 32 | PC 0x05 | IR 821D = 1000 001 0 00011101 | LD R1, power.exp
+  result : R1 <- M[0x1D] (power.exp) = 0
+  bus    : fetch: read M[0x05] = 821D | execute: read M[0x1D] = 0000
+  alu    : not used
+  cpu    : PC=06 IR=821D MAR=1D MDR=0000   flags Z=1 N=0 C=1 V=0   cycles 4
+  regs   : R0=0000  R1=0000* R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=0  power.result=64  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D >A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0000  0040  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 33 | PC 0x06 | IR A040 = 1010 000 001 000 000 | CMP R1, R0
+  result : compare 0 with 0, set flags
+  bus    : fetch: read M[0x06] = A040
+  alu    : SUB  A=0000  B=0000  ->  0000
+  cpu    : PC=07 IR=A040 MAR=06 MDR=A040   flags Z=1 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0000  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=0  power.result=64  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040 >B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0000  0040  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 34 | PC 0x07 | IR B610 = 1011 0110 00010000  | BLE power.endwhile1
+  result : PC <- 0x10 (branch taken)
+  bus    : fetch: read M[0x07] = B610
+  alu    : not used
+  cpu    : PC=10 IR=B610 MAR=07 MDR=B610   flags Z=1 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0000  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=0  power.result=64  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10  >821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0000  0040  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 35 | PC 0x10 | IR 821E = 1000 001 0 00011110 | LD R1, power.result
+  result : R1 <- M[0x1E] (power.result) = 64
+  bus    : fetch: read M[0x10] = 821E | execute: read M[0x1E] = 0040
+  alu    : not used
+  cpu    : PC=11 IR=821E MAR=1E MDR=0040   flags Z=1 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0040* R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0026 
+  vars   : power.base=8  power.exp=0  power.result=64  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E >D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0000  0040  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 36 | PC 0x11 | IR D000 = 1101 000000000000   | RET
+  result : pop return address 0x17, PC <- 0x17
+  bus    : fetch: read M[0x11] = D000 | execute: read M[0x26] = 0017
+  alu    : not used
+  cpu    : PC=17 IR=D000 MAR=26 MDR=0017   flags Z=1 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0040  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0027*
+  vars   : power.base=8  power.exp=0  power.result=64  main.x=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003 >921F   code
+  0x18   821F  F200  7200  D000  0008  0000  0040  0000   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 37 | PC 0x17 | IR 921F = 1001 001 0 00011111 | ST R1, main.x
+  result : M[0x1F] (main.x) <- R1 = 64
+  bus    : fetch: read M[0x17] = 921F | execute: write M[0x1F] = 0040
+  alu    : not used
+  cpu    : PC=18 IR=921F MAR=1F MDR=0040   flags Z=1 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0040  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0027 
+  vars   : power.base=8  power.exp=0  power.result=64  main.x=64
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18  >821F  F200  7200  D000  0008  0000  0040 [0040]  code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 38 | PC 0x18 | IR 821F = 1000 001 0 00011111 | LD R1, main.x
+  result : R1 <- M[0x1F] (main.x) = 64
+  bus    : fetch: read M[0x18] = 821F | execute: read M[0x1F] = 0040
+  alu    : not used
+  cpu    : PC=19 IR=821F MAR=1F MDR=0040   flags Z=1 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0040* R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0027 
+  vars   : power.base=8  power.exp=0  power.result=64  main.x=64
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F >F200  7200  D000  0008  0000  0040  0040   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 39 | PC 0x19 | IR F200 = 1111 001 0 00000000 | OUT R1
+  result : output R1 = 64
+  OUTPUT : 64
+  bus    : fetch: read M[0x19] = F200 | execute: output port = 64
+  alu    : not used
+  cpu    : PC=1A IR=F200 MAR=19 MDR=F200   flags Z=1 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0040  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0027 
+  vars   : power.base=8  power.exp=0  power.result=64  main.x=64
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200 >7200  D000  0008  0000  0040  0040   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 40 | PC 0x1A | IR 7200 = 0111 001 000000000  | LI R1, 0
+  result : R1 <- 0
+  bus    : fetch: read M[0x1A] = 7200
+  alu    : not used
+  cpu    : PC=1B IR=7200 MAR=1A MDR=7200   flags Z=1 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0000* R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0027 
+  vars   : power.base=8  power.exp=0  power.result=64  main.x=64
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200 >D000  0008  0000  0040  0040   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 41 | PC 0x1B | IR D000 = 1101 000000000000   | RET
+  result : pop return address 0x02, PC <- 0x02
+  bus    : fetch: read M[0x1B] = D000 | execute: read M[0x27] = 0002
+  alu    : not used
+  cpu    : PC=02 IR=D000 MAR=27 MDR=0002   flags Z=1 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0000  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0028*
+  vars   : power.base=8  power.exp=0  power.result=64  main.x=64
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012 >0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0000  0040  0040   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+STEP 42 | PC 0x02 | IR 0000 = 0000 000000000000   | HALT
+  result : processor halted
+  bus    : fetch: read M[0x02] = 0000
+  alu    : not used
+  cpu    : PC=03 IR=0000 MAR=02 MDR=0000   flags Z=1 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0000  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0028 
+  vars   : power.base=8  power.exp=0  power.result=64  main.x=64
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   7E28  C012  0000  7201  921E  821D  A040  B610   code
+  0x08   821E  841C  3250  921E  821D  627F  921D  B005   code
+  0x10   821E  D000  7208  7402  921C  941D  C003  921F   code
+  0x18   821F  F200  7200  D000  0008  0000  0040  0040   code/data
+  0x20   0000  0000  0000  0000  0000  0000  0017  0002   stack
+==============================================================================
+Halted after 42 instructions (150 clock cycles).
+Program output: 64

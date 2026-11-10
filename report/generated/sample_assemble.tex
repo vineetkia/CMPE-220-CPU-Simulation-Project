@@ -1,0 +1,11 @@
+0x00 & LD R2, n & LD $\rightarrow$ 1000 {\rmfamily (M)} & 1000 010 0 00001001 & 8409\\
+0x01 & LI R1, 1 & LI $\rightarrow$ 0111 {\rmfamily (L)} & 0111 001 000000001 & 7201\\
+0x02 & MUL R1, R1, R2 & MUL $\rightarrow$ 0011 {\rmfamily (R)} & 0011 001 001 010 000 & 3250\\
+0x03 & ST R1, result & ST $\rightarrow$ 1001 {\rmfamily (M)} & 1001 001 0 00001010 & 920A\\
+0x04 & ADDI R2, R2, -1 & ADDI $\rightarrow$ 0110 {\rmfamily (I)} & 0110 010 010 111111 & 64BF\\
+0x05 & ST R2, n & ST $\rightarrow$ 1001 {\rmfamily (M)} & 1001 010 0 00001001 & 9409\\
+0x06 & BNE loop & BNE $\rightarrow$ 1011 {\rmfamily (B)} & 1011 0010 00000010 & B202\\
+0x07 & OUT R1 & OUT $\rightarrow$ 1111 {\rmfamily (S)} & 1111 001 0 00000000 & F200\\
+0x08 & HALT & HALT $\rightarrow$ 0000 {\rmfamily (N)} & 0000 000000000000 & 0000\\
+\rowcolor{datac}0x09 & .word 3 & {\rmfamily\itshape data word} & 0000000000000011 & 0003\\
+\rowcolor{datac}0x0A & .word 0 & {\rmfamily\itshape data word} & 0000000000000000 & 0000\\

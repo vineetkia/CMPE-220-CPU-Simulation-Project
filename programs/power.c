@@ -1,0 +1,24 @@
+/*
+ * power.c
+ * Program 2: works out 8^2 = 64.
+ *
+ * This is normal C, so you can also build it with gcc to check the answer.
+ * Our s16cc compiler turns it into SPARTAN-16 assembly:
+ *     ./spartan compile programs/power.c
+ */
+#include <stdio.h>
+
+int power(int base, int exp) {
+    int result = 1;
+    while (exp > 0) {
+        result = result * base;
+        exp = exp - 1;
+    }
+    return result;
+}
+
+int main() {
+    int x = power(8, 2);
+    printf("%d\n", x);
+    return 0;
+}

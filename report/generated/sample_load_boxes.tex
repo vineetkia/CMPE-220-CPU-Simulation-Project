@@ -1,0 +1,15 @@
+\noindent\begin{tcolorbox}[stepbox, title={RAM before loading}]
+\textcolor{dim}{all 256 words are 0000}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 0000 & 0000 & 0000 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\textcolor{dim}{08} & 0000 & 0000 & 0000 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={RAM after loading}]
+\textcolor{dim}{red = written by the loader}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & \cellcolor{wrt}\textcolor{white}{\textbf{8409}} & \cellcolor{wrt}\textcolor{white}{\textbf{7201}} & \cellcolor{wrt}\textcolor{white}{\textbf{3250}} & \cellcolor{wrt}\textcolor{white}{\textbf{920A}} & \cellcolor{wrt}\textcolor{white}{\textbf{64BF}} & \cellcolor{wrt}\textcolor{white}{\textbf{9409}} & \cellcolor{wrt}\textcolor{white}{\textbf{B202}} & \cellcolor{wrt}\textcolor{white}{\textbf{F200}}\\
+\textcolor{dim}{08} & \cellcolor{wrt}\textcolor{white}{\textbf{0000}} & \cellcolor{wrt}\textcolor{white}{\textbf{0003}} & \cellcolor{wrt}\textcolor{white}{\textbf{0000}} & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}

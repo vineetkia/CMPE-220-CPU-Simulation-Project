@@ -1,0 +1,29 @@
+\noindent\begin{tcolorbox}[stepbox, title={Before: step 0 \hfill program loaded}]
+\textcolor{dim}{program loaded into memory}\\
+\textcolor{dim}{all registers start at 0}\\
+PC=00 IR=0000 MAR=00 MDR=0000\\
+Z=0 N=0 C=0 V=0\\
+R0=0000 R1=0000 R2=0000 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=3  result=0}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & \cellcolor{pcc}\textbf{8409} & 7201 & 3250 & 920A & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0003 & \cellcolor{datac}0000 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={After: step 19 \hfill HALT}]
+\textcolor{dim}{IR} 0000 = 0000 000000000000\\
+processor halted\\
+\textcolor{dim}{BUS} read M[08]=0000\\
+\textcolor{dim}{ALU} \textcolor{dim}{not used}\\
+PC=09 IR=0000 MAR=08 MDR=0000\\
+Z=1 N=0 C=1 V=0 \hfill \textcolor{dim}{3 clock cycles}\\
+R0=0000 R1=0006 R2=0000 R3=0000\\
+R4=0000 R5=0000 R6=0000 SP=0000\\
+\textcolor{dim}{n=0  result=6}\\[1pt]
+{\setlength{\tabcolsep}{1.6pt}\begin{tabular}{@{}r*{8}{c}@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{+0} & \textcolor{dim}{+1} & \textcolor{dim}{+2} & \textcolor{dim}{+3} & \textcolor{dim}{+4} & \textcolor{dim}{+5} & \textcolor{dim}{+6} & \textcolor{dim}{+7}\\
+\textcolor{dim}{00} & 8409 & 7201 & 3250 & 920A & 64BF & 9409 & B202 & F200\\
+\textcolor{dim}{08} & 0000 & \cellcolor{datac}0000 & \cellcolor{datac}0006 & 0000 & 0000 & 0000 & 0000 & 0000\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}

@@ -1,0 +1,13 @@
+# built by make (run "make" to get them back)
+spartan
+build/
+
+# LaTeX leftovers
+report/*.aux
+report/*.log
+report/*.out
+
+# editor and OS files
+.DS_Store
+.vscode/
+.idea/

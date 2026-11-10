@@ -1,0 +1,19 @@
+1 & \texttt{LD R2, n} & Copy memory word n (value 3) into R2 & \texttt{read M[09]=0003} & 0 & 3 & 0 & 3 & 0\\
+2 & \texttt{LI R1, 1} & Put the number 1 into R1 & \texttt{\textcolor{dim}{none}} & 1 & 3 & 0 & 3 & 0\\
+3 & \texttt{MUL R1, R1, R2} & ALU multiplies R1 by R2: 1 $\times$ 3 = 3, answer goes to R1 & \texttt{\textcolor{dim}{none}} & 3 & 3 & 0 & 3 & 0\\
+4 & \texttt{ST R1, result} & Copy R1 (value 3) into memory word result & \texttt{\textcolor{wrt}{write M[0A]=0003}} & 3 & 3 & 0 & 3 & 3\\
+5 & \texttt{ADDI R2, R2, -1} & ALU adds -1 to R2: 3 + (-1) = 2, answer is not 0, so Z = 0 & \texttt{\textcolor{dim}{none}} & 3 & 2 & 0 & 3 & 3\\
+6 & \texttt{ST R2, n} & Copy R2 (value 2) into memory word n & \texttt{\textcolor{wrt}{write M[09]=0002}} & 3 & 2 & 0 & 2 & 3\\
+7 & \texttt{BNE loop} & Z is 0, so jump back to loop (PC = 02) & \texttt{\textcolor{dim}{none}} & 3 & 2 & 0 & 2 & 3\\
+8 & \texttt{MUL R1, R1, R2} & ALU multiplies R1 by R2: 3 $\times$ 2 = 6, answer goes to R1 & \texttt{\textcolor{dim}{none}} & 6 & 2 & 0 & 2 & 3\\
+9 & \texttt{ST R1, result} & Copy R1 (value 6) into memory word result & \texttt{\textcolor{wrt}{write M[0A]=0006}} & 6 & 2 & 0 & 2 & 6\\
+10 & \texttt{ADDI R2, R2, -1} & ALU adds -1 to R2: 2 + (-1) = 1, answer is not 0, so Z = 0 & \texttt{\textcolor{dim}{none}} & 6 & 1 & 0 & 2 & 6\\
+11 & \texttt{ST R2, n} & Copy R2 (value 1) into memory word n & \texttt{\textcolor{wrt}{write M[09]=0001}} & 6 & 1 & 0 & 1 & 6\\
+12 & \texttt{BNE loop} & Z is 0, so jump back to loop (PC = 02) & \texttt{\textcolor{dim}{none}} & 6 & 1 & 0 & 1 & 6\\
+13 & \texttt{MUL R1, R1, R2} & ALU multiplies R1 by R2: 6 $\times$ 1 = 6, answer goes to R1 & \texttt{\textcolor{dim}{none}} & 6 & 1 & 0 & 1 & 6\\
+14 & \texttt{ST R1, result} & Copy R1 (value 6) into memory word result & \texttt{\textcolor{wrt}{write M[0A]=0006}} & 6 & 1 & 0 & 1 & 6\\
+15 & \texttt{ADDI R2, R2, -1} & ALU adds -1 to R2: 1 + (-1) = 0, answer is 0, so Z = 1 & \texttt{\textcolor{dim}{none}} & 6 & 0 & 1 & 1 & 6\\
+16 & \texttt{ST R2, n} & Copy R2 (value 0) into memory word n & \texttt{\textcolor{wrt}{write M[09]=0000}} & 6 & 0 & 1 & 0 & 6\\
+17 & \texttt{BNE loop} & Z is 1, so no jump. The loop is finished & \texttt{\textcolor{dim}{none}} & 6 & 0 & 1 & 0 & 6\\
+18 & \texttt{OUT R1} & Send R1 = 6 to the output port & \texttt{out 6} & 6 & 0 & 1 & 0 & 6\\
+19 & \texttt{HALT} & Stop the CPU & \texttt{\textcolor{dim}{none}} & 6 & 0 & 1 & 0 & 6\\

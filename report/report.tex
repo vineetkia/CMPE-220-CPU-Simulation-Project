@@ -1,0 +1,717 @@
+% SPARTAN-16 CPU design report.
+% Build it with:  make report
+\documentclass[10pt]{article}
+\usepackage[letterpaper, margin=0.75in, top=0.7in, bottom=0.8in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[table]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc}
+\usepackage{booktabs, tabularx, array, longtable}
+\usepackage{caption}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{listings}
+\usepackage{tcolorbox}
+\usepackage[hidelinks]{hyperref}
+
+\input{generated/results.tex}
+\input{team.tex}
+
+% ---------- colors ----------
+\definecolor{frame}{HTML}{1F3A5F}
+\definecolor{boxc}{HTML}{E8F0FA}
+\definecolor{muxc}{HTML}{FFF4D6}
+\definecolor{aluc}{HTML}{FDE2D2}
+\definecolor{memc}{HTML}{E3F4E1}
+\definecolor{cpuc}{HTML}{F7F9FC}
+\definecolor{busc}{HTML}{1F3A5F}
+\definecolor{ctlc}{HTML}{C0392B}
+\definecolor{opc}{HTML}{BFD7F2}
+\definecolor{fld}{HTML}{F4F6F9}
+\definecolor{fixed}{HTML}{E2E2E2}
+\definecolor{wrt}{HTML}{C0392B}
+\definecolor{pcc}{HTML}{9BE39B}
+\definecolor{datac}{HTML}{DCEBFA}
+\definecolor{stackc}{HTML}{FFF0C2}
+\definecolor{outc}{HTML}{FFE08A}
+\definecolor{dim}{HTML}{7A8794}
+\definecolor{funcc}{HTML}{E8F0FA}
+
+% figures and tables stay where we put them (no floating)
+\makeatletter
+\newenvironment{tablehere}{\par\vspace{8pt}\noindent\begin{minipage}{\linewidth}\centering\def\@captype{table}}{\end{minipage}\par\vspace{8pt}}
+\newenvironment{figurehere}{\par\vspace{8pt}\noindent\begin{minipage}{\linewidth}\centering\def\@captype{figure}}{\end{minipage}\par\vspace{8pt}}
+% table rows are read with the plain TeX \input so \bottomrule can follow them
+\let\rawinput\@@input
+\makeatother
+
+% ---------- page numbers like 03/20 ----------
+\makeatletter
+\newcommand{\twodigit}[1]{\ifnum#1<10 0\fi\number#1}
+\providecommand{\lastpage}{0}
+\AtEndDocument{\clearpage\immediate\write\@auxout{\gdef\string\lastpage{\the\numexpr\value{page}-1\relax}}}
+\makeatother
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[L]{\sffamily\small SPARTAN-16 CPU Design}
+\fancyhead[R]{\sffamily\small CMPE 220}
+\fancyfoot[C]{\sffamily\small \twodigit{\value{page}}/\twodigit{\lastpage}}
+\fancypagestyle{plain}{\fancyhf{}\renewcommand{\headrulewidth}{0pt}%
+  \fancyfoot[C]{\sffamily\small \twodigit{\value{page}}/\twodigit{\lastpage}}}
+
+% ---------- headings and captions ----------
+\titleformat{\section}{\sffamily\Large\bfseries\color{frame}}{\thesection}{0.6em}{}[{\color{frame}\titlerule}]
+\titleformat{\subsection}{\sffamily\large\bfseries\color{frame}}{\thesubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{10pt}{6pt}
+\titlespacing*{\subsection}{0pt}{8pt}{4pt}
+\captionsetup{font={small,sf}, labelfont=bf, skip=4pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3pt}
+
+\lstdefinestyle{csrc}{language=C, basicstyle=\ttfamily\small, keywordstyle=\color{frame}\bfseries,
+  commentstyle=\color{dim}\itshape, numbers=left, numberstyle=\tiny\color{dim}, frame=single,
+  rulecolor=\color{frame!40}, backgroundcolor=\color{fld}, xleftmargin=1.5em, framexleftmargin=1.5em,
+  columns=fullflexible, keepspaces=true}
+
+% ---------- one step of a trace ----------
+\tcbset{stepbox/.style={width=0.497\textwidth, nobeforeafter, box align=top,
+  colback=white, colframe=frame, coltitle=white, fonttitle=\ttfamily\footnotesize\bfseries,
+  fontupper=\ttfamily\footnotesize, boxrule=0.5pt, arc=1.2pt, left=3pt, right=3pt, top=2pt,
+  bottom=2pt, toptitle=1pt, bottomtitle=1pt}}
+
+\newcommand{\legend}{%
+  \begin{tcolorbox}[colback=fld, colframe=frame!40, boxrule=0.4pt, arc=1pt, left=4pt, right=4pt,
+    top=2pt, bottom=2pt, fontupper=\small\sffamily]
+  \textbf{Each box is the machine right after one instruction.} From the top: the instruction in binary,
+  what it did, what went over the system bus, what the ALU did, the CPU registers (PC, IR, MAR, MDR),
+  the flags, R0 to R7 (\textcolor{wrt}{\textbf{red}} = just changed), the named variables in decimal,
+  and memory in hex.\\[2pt]
+  Memory colors:\;
+  \colorbox{pcc}{\strut\texttt{\textbf{XXXX}}} next instruction (where PC points)\quad
+  \colorbox{wrt}{\strut\texttt{\textcolor{white}{\textbf{XXXX}}}} just written\quad
+  \colorbox{datac}{\strut\texttt{XXXX}} data\quad
+  \colorbox{stackc}{\strut\texttt{XXXX}} stack\quad
+  \fcolorbox{dim}{white}{\strut\texttt{XXXX}} code
+  \end{tcolorbox}}
+
+\begin{document}
+
+% =====================================================================
+\begin{titlepage}
+\thispagestyle{plain}
+\centering
+\vspace*{1.2in}
+{\sffamily\bfseries\color{frame}\fontsize{38}{44}\selectfont SPARTAN-16\par}
+\vspace{8pt}
+{\sffamily\Large Our own 16-bit CPU, with an assembler, a small C compiler and a simulator\par}
+\vspace{18pt}
+{\color{frame}\rule{0.6\textwidth}{1pt}\par}
+\vspace{18pt}
+{\large CMPE 220 CPU Design Project\par}
+\vspace{1.1in}
+{\sffamily\large\bfseries Team Members\par}
+\vspace{8pt}
+{\large \teamnames\par}
+\vfill
+{\large \today\par}
+\vspace{0.4in}
+\end{titlepage}
+\setcounter{page}{2}
+
+% =====================================================================
+\section*{Contents}
+\begin{tabularx}{\textwidth}{@{}lX r@{}}
+\toprule
+1 & CPU design: diagram and parts & \pageref{sec:cpu}\\
+2 & Instruction set and encoding & \pageref{sec:isa}\\
+3 & How to run our code & \pageref{sec:run}\\
+4 & Small sample: 3! assembled, loaded and run step by step & \pageref{sec:sample}\\
+5 & Program 1: 8! written in assembly & \pageref{sec:fact}\\
+6 & Program 2: $8^2$ written in C and translated to assembly & \pageref{sec:power}\\
+7 & Results & \pageref{sec:results}\\
+8 & Who did what & \pageref{sec:team}\\
+\bottomrule
+\end{tabularx}
+
+\begin{tablehere}
+\caption{SPARTAN-16 in short}
+\label{tab:spec}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Word size & 16 bits \\
+Memory & 256 words of 16 bits, addresses 0x00 to 0xFF (8 bits) \\
+General registers & R0 to R7, 16 bits each. R0 is always 0, R7 is the stack pointer (SP) \\
+Other registers & PC (8 bits), IR (16 bits), MAR (8 bits), MDR (16 bits), flags Z N C V \\
+System bus & address bus (8 bits), data bus (16 bits), control bus \\
+Instructions & 16 opcodes, every instruction is one 16-bit word, 8 formats \\
+Program start & loaded at 0x00, PC starts at 0x00 (the entry point) \\
+Instruction cycle & fetch, decode, execute \\
+Output & \texttt{OUT r} prints a register \\
+\bottomrule
+\end{tabular}
+\end{tablehere}
+
+\begin{tablehere}
+\caption{The parts of the CPU and where each one is in our C code}
+\label{tab:parts}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}l l X l@{}}
+\toprule
+Part & Size & What it does & In our C code \\
+\midrule
+PC, program counter & 8 bits & address of the next instruction & \texttt{Register pc} \\
+IR, instruction register & 16 bits & the instruction being run & \texttt{Register ir} \\
+MAR, memory address reg. & 8 bits & the address sent to memory & \texttt{Register mar} \\
+MDR, memory data reg. & 16 bits & the data read from or written to memory & \texttt{Register mdr} \\
+Register file & 8 $\times$ 16 bits & R0 to R7 & \texttt{RegisterFile} \\
+Flags & 4 bits & Z (zero), N (negative), C (carry), V (overflow) & \texttt{Flags} \\
+ALU & 16 bits & ADD, SUB, MUL, AND, OR, and sets the flags & \texttt{ALU}, \texttt{alu\_compute()} \\
+Control unit & & decodes IR, checks branch conditions & \texttt{control\_decode()}, \texttt{control\_branch\_taken()} \\
+Address bus & 8 bits & carries the address from MAR to memory & \texttt{SystemBus address} \\
+Data bus & 16 bits & carries data between MDR and memory or output & \texttt{SystemBus data} \\
+Control bus & & MEM READ, MEM WRITE or IO WRITE & \texttt{SystemBus control} \\
+Memory (RAM) & 256 $\times$ 16 bits & holds the program, its data and the stack & \texttt{Memory} \\
+Output port & & shows the numbers sent by \texttt{OUT} & \texttt{OutputPort} \\
+Loader & & writes the program into RAM over the bus & \texttt{load\_program()} \\
+Clock & & counts cycles: 3 per instruction, +1 for each extra memory access & \texttt{cpu.cycles} \\
+\bottomrule
+\end{tabularx}
+\end{tablehere}
+All of these parts are written in C in \texttt{src/components.c}, except the loader (\texttt{src/loader.c}). \texttt{src/cpu.c} connects them.
+
+\begin{tablehere}
+\caption{How we use the registers}
+\label{tab:regs}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Register & In hardware & In our C compiler \\
+\midrule
+R0 & always 0, writing to it does nothing & handy for comparing with 0 \\
+R1 & normal register & holds the answer of an expression and a function's return value \\
+R2 to R6 & normal registers & extra space while working out expressions \\
+R7 (SP) & stack pointer for PUSH, POP, CALL, RET & set to the top of the stack when the program starts \\
+\bottomrule
+\end{tabular}
+\end{tablehere}
+
+% =====================================================================
+\clearpage
+\section{CPU Design}\label{sec:cpu}
+
+\begin{figurehere}
+\begin{tikzpicture}[>=Stealth, font=\sffamily\footnotesize,
+  blk/.style={draw=frame, thick, fill=#1, rounded corners=2pt, align=center, inner sep=3pt},
+  blk/.default=boxc,
+  path/.style={->, thick, draw=busc},
+  bi/.style={<->, thick, draw=busc},
+  ctl/.style={->, densely dashed, draw=ctlc, thick},
+  halo/.style={draw=white, line width=5pt},
+  lbl/.style={font=\sffamily\scriptsize, fill=white, inner sep=1pt, text=frame},
+  clbl/.style={font=\sffamily\scriptsize\itshape, text=ctlc, inner sep=1pt, fill=white},
+  ibus/.style={line width=3pt, draw=frame!45, line cap=round},
+  sbus/.style={line width=3.4pt, draw=#1, line cap=round},
+]
+% ---------- CPU outline ----------
+\draw[draw=frame, thick, dashed, rounded corners=6pt, fill=cpuc] (0,3.0) rectangle (12.5,12.7);
+\node[anchor=north west, font=\sffamily\bfseries, text=frame] at (0.1,12.65) {CPU};
+
+% ---------- control unit ----------
+\node[blk, minimum width=11.0cm, minimum height=0.85cm] (cu) at (6.7,11.7)
+  {\textbf{CONTROL UNIT}\quad\scriptsize decodes the opcode, sends control signals, checks the flags for branches};
+
+% ---------- top row: PC, IR, flags ----------
+\node[blk, minimum width=1.5cm, minimum height=0.8cm] (pc) at (0.9,9.9) {\textbf{PC}\\[-1pt]\scriptsize 8 bits};
+\node[blk, minimum width=2.2cm, minimum height=0.8cm] (ir) at (4.6,9.9) {\textbf{IR}\\[-1pt]\scriptsize 16 bits};
+\foreach \n/\w/\x/\f in {op/4/0/100, rd/3/4/25, rs/3/7/25, rt/3/10/25, imm/3/13/25} {
+  \node[draw=frame!70, fill=opc!\f, minimum width=\w*0.1375cm, minimum height=0.32cm,
+        inner sep=0pt, font=\ttfamily\tiny, anchor=north west] (f\n) at ($(ir.south west)+(\x*0.1375,-0.06)$) {\n};
+}
+\node[blk, minimum width=1.6cm, minimum height=0.8cm] (flags) at (7.0,9.9) {\textbf{Flags}\\[-1pt]\ttfamily\scriptsize Z N C V};
+
+% ---------- internal bus ----------
+\draw[ibus] (0.3,7.6) -- (12.2,7.6);
+\node[font=\sffamily\scriptsize\bfseries, text=frame, anchor=south east] at (12.2,7.7) {INTERNAL BUS (16 bits)};
+
+% ---------- bottom row: registers, ALU, MAR, MDR ----------
+\node[blk, minimum width=2.2cm, minimum height=3.9cm, anchor=north] (rf) at (1.75,7.1) {};
+\node[anchor=north, align=center] at (rf.north) {\textbf{Register File}};
+\foreach \r [count=\i] in {R0 = 0, R1, R2, R3, R4, R5, R6, R7 = SP} {
+  \node[draw=frame!60, fill=white, minimum width=1.6cm, minimum height=0.3cm, inner sep=0pt, font=\ttfamily\scriptsize]
+    at ($(rf.north)+(0,-0.3-0.4*\i)$) {\r};
+}
+\node[draw=frame, thick, fill=muxc, trapezium, trapezium angle=70, shape border rotate=270,
+      minimum width=1.0cm, minimum height=0.45cm, font=\sffamily\tiny, align=center] (bmux) at (4.7,4.3) {B};
+\begin{scope}[shift={(5.6,3.5)}]
+  \draw[thick, draw=frame, fill=aluc] (0,0) -- (1.5,0.7) -- (1.5,2.2) -- (0,2.9) -- (0,1.75) -- (0.35,1.45) -- (0,1.15) -- cycle;
+  \node[align=center] at (0.85,1.45) {\textbf{ALU}\\\scriptsize + $-$ $\times$\\\scriptsize AND OR};
+  \coordinate (aluA) at (0,2.35);
+  \coordinate (aluB) at (0,0.55);
+  \coordinate (aluOut) at (1.5,1.45);
+  \coordinate (aluTop) at (1.1,2.4);
+  \coordinate (aluCtl) at (0.4,2.7);
+\end{scope}
+\node[blk, minimum width=1.5cm, minimum height=0.8cm] (mar) at (9.4,5.3) {\textbf{MAR}\\[-1pt]\scriptsize 8 bits};
+\node[blk, minimum width=1.5cm, minimum height=0.8cm] (mdr) at (11.2,5.3) {\textbf{MDR}\\[-1pt]\scriptsize 16 bits};
+
+% ---------- memory and output port ----------
+\node[blk=memc, minimum width=3.6cm, minimum height=6.6cm, anchor=north] (mem) at (15.3,11.4) {};
+\node[anchor=north, align=center] at (mem.north) {\textbf{Main Memory}\\\scriptsize 256 words $\times$ 16 bits};
+\foreach \t/\c [count=\i] in {{0x00 program}/white, {data}/datac, {stack}/stackc, {free}/white, {0xFF}/white} {
+  \node[draw=frame!60, fill=\c, minimum width=2.6cm, minimum height=0.65cm, font=\ttfamily\scriptsize]
+    at ($(mem.north)+(0,-0.5-0.95*\i)$) {\t};
+}
+\node[blk, minimum width=2.4cm] (out) at (15.3,-0.6) {\textbf{Output port}\\\scriptsize prints numbers};
+
+% ---------- system bus ----------
+\draw[sbus=frame!75] (0.3,2.4) -- (17.4,2.4);
+\draw[sbus=green!35!black!55] (0.3,1.6) -- (17.4,1.6);
+\draw[sbus=ctlc!70] (0.3,0.8) -- (17.4,0.8);
+\node[font=\sffamily\scriptsize\bfseries, text=frame, anchor=south west] at (0.3,2.5) {ADDRESS BUS (8 bits)};
+\node[font=\sffamily\scriptsize\bfseries, text=frame, anchor=south west] at (0.3,1.7) {DATA BUS (16 bits)};
+\node[font=\sffamily\scriptsize\bfseries, text=frame, anchor=south west] at (0.3,0.9) {CONTROL BUS (MEM READ, MEM WRITE, IO WRITE)};
+
+% ---------- paths inside the CPU ----------
+\draw[bi] (pc.south) -- node[lbl, sloped, pos=0.5]{address / jump} (pc.south |- 0,7.6);
+\draw[bi] (fop.south |- 0,7.6) -- node[lbl, sloped, pos=0.5]{instruction} (fop.south);
+\draw[path] (fimm.south) -- node[lbl, sloped, pos=0.5]{imm, addr8} (fimm.south |- 0,7.6);
+\draw[path] (fop.north |- ir.north) -- node[lbl, right, pos=0.5]{opcode} (fop.north |- cu.south);
+\draw[bi] (rf.north) -- (rf.north |- 0,7.6);
+\draw[path] (rf.east |- aluA) -- node[lbl, above, pos=0.35]{A} (aluA);
+\draw[path] (rf.east |- 0,4.45) -- node[lbl, above, pos=0.45]{B} ([yshift=0.15cm]bmux.west);
+\draw[path] (4.1,7.6) -- (4.1,4.15) -- ([yshift=-0.15cm]bmux.west);
+\node[lbl] at (4.1,5.6) {imm};
+\draw[path] (bmux.east) -- (aluB);
+\draw[path] (aluOut) -- (8.2,4.95) -- node[lbl, right, pos=0.5]{result} (8.2,7.6);
+\draw[halo] (aluTop) -- (aluTop |- 0,7.9);
+\draw[path] (aluTop) -- node[lbl, sloped, pos=0.8]{sets flags} (aluTop |- flags.south);
+\draw[path] (9.4,7.6) -- node[lbl, right, pos=0.4]{address} (mar.north);
+\draw[bi] (11.2,7.6) -- node[lbl, right, pos=0.4]{data} (mdr.north);
+
+% ---------- CPU to system bus ----------
+\draw[path] (mar.south) -- (mar.south |- 0,2.4);
+\draw[halo] (mdr.south) -- (mdr.south |- 0,1.6);
+\draw[bi] (mdr.south) -- (mdr.south |- 0,1.6);
+\draw[halo] (12.15,11.2) -- (12.15,0.8);
+\draw[ctl] (cu.east) -| (12.15,0.8);
+
+% ---------- memory and output port on the system bus ----------
+\draw[path] (14.1,2.4) -- node[lbl, left, pos=0.5]{address} (mem.south -| 14.1,0);
+\draw[halo] (15.3,1.6) -- (15.3,2.6);
+\draw[bi] (15.3,1.6) -- node[lbl, pos=0.75]{data} (mem.south -| 15.3,0);
+\draw[halo] (16.5,0.8) -- (16.5,2.6);
+\draw[ctl] (16.5,0.8) -- node[clbl, right, pos=0.7]{read/write} (mem.south -| 16.5,0);
+\draw[halo] (14.7,1.6) -- (14.7,0.6);
+\draw[path] (14.7,1.6) -- (out.north -| 14.7,0);
+\draw[ctl] (15.9,0.8) -- (out.north -| 15.9,0);
+
+% ---------- control signals inside the CPU ----------
+\draw[ctl] (pc.north |- cu.south) -- node[clbl, right, pos=0.45]{load} (pc.north);
+\draw[ctl] ([xshift=0.6cm]ir.north |- cu.south) -- node[clbl, right, pos=0.45]{load} ([xshift=0.6cm]ir.north);
+\draw[ctl] (flags.north) -- node[clbl, right, pos=0.45]{flags} (flags.north |- cu.south);
+\draw[halo] (2.5,11.0) -- (2.5,7.1);
+\draw[ctl] (2.5,11.27) -- node[clbl, right, pos=0.12]{reg write} (2.5,7.1);
+\draw[halo] (5.95,9.0) -- (5.95,6.25);
+\draw[ctl] (5.95,11.27) -- node[clbl, left, pos=0.86]{ALU op} (5.95,6.25);
+\draw[ctl] (10.3,11.27) -- node[clbl, right, pos=0.1]{load} (10.3,5.9) -- (mar.north east);
+\end{tikzpicture}
+\caption{SPARTAN-16 block diagram. Solid arrows carry data or addresses. Dashed red arrows are control signals.
+Inside the CPU all parts share one internal bus. The CPU talks to memory and the output port only through MAR, MDR and the three system buses.}
+\label{fig:cpu}
+\end{figurehere}
+
+\begin{figurehere}
+\begin{tikzpicture}[>=Stealth, font=\sffamily\small,
+  st/.style={draw=frame, thick, fill=boxc, rounded corners=3pt, minimum width=4.6cm, minimum height=1.45cm, align=center}]
+\node[st] (f) at (0,0) {\textbf{1. FETCH}\\\footnotesize MAR $\leftarrow$ PC, MDR $\leftarrow$ M[MAR]\\\footnotesize IR $\leftarrow$ MDR, PC $\leftarrow$ PC + 1};
+\node[st] (d) at (5.7,0) {\textbf{2. DECODE}\\\footnotesize control unit splits IR into\\\footnotesize opcode, registers, immediate};
+\node[st] (e) at (11.4,0) {\textbf{3. EXECUTE}\\\footnotesize use the ALU or memory,\\\footnotesize save the result, set flags};
+\draw[->, thick, frame] (f) -- (d);
+\draw[->, thick, frame] (d) -- (e);
+\draw[->, thick, frame] (e.south) -- ++(0,-0.4) -| node[pos=0.25, below, font=\footnotesize\sffamily]{next instruction, until HALT} (f.south);
+\end{tikzpicture}
+\caption{The instruction cycle. Our simulator runs these three steps for every instruction (\texttt{cpu\_step()} in \texttt{src/cpu.c}).}
+\label{fig:cycle}
+\end{figurehere}
+
+% =====================================================================
+\clearpage
+\section{Instruction Set}\label{sec:isa}
+
+\begin{figurehere}
+\begin{tikzpicture}
+\input{generated/formats.tex}
+\end{tikzpicture}
+\caption{Instruction formats, bit 15 on the left. Blue is the 4-bit opcode, grey bits are fixed.
+\texttt{r, rd, rs, rt, rb} pick a register R0 to R7. \texttt{imm} fields are signed.
+\texttt{m} picks a fixed address (0) or register + offset (1). \texttt{s} picks PUSH (0) or POP (1).}
+\label{fig:formats}
+\end{figurehere}
+
+\begin{tablehere}
+\caption{Instruction encoding. In the bit pattern, \texttt{d s t r b} are register bits, \texttt{i} is an immediate,
+\texttt{a} is an address and \texttt{c} is a condition. The hex column is what our assembler made from the example.}
+\label{tab:encoding}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}clc l l l l l@{}}
+\toprule
+Op & Name & Fmt & Bit pattern [15:0] & What it does & Flags & Example & Hex\\
+\midrule
+\rawinput generated/isa_table.tex
+\bottomrule
+\end{tabular}
+\end{tablehere}
+
+\begin{tablehere}
+\begin{minipage}[t]{0.47\textwidth}
+\centering
+\captionof{table}{Branch conditions (\texttt{cccc}). Signed compares use N and V.}
+\label{tab:cond}
+\small
+\begin{tabular}{@{}clll@{}}
+\toprule
+cccc & Name & Jumps when & C op\\
+\midrule
+\rawinput generated/cond_table.tex
+\bottomrule
+\end{tabular}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.5\textwidth}
+\centering
+\captionof{table}{Assembly language syntax}
+\label{tab:syntax}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+What & Example \\
+\midrule
+label & \texttt{loop:} \\
+comment & \texttt{; text} \\
+register & \texttt{R0} to \texttt{R7}, \texttt{SP} \\
+number & \texttt{8}, \texttt{-1}, \texttt{0x2A}, \texttt{label} \\
+fixed address & \texttt{LD R1, result} \\
+register + offset & \texttt{LD R1, [SP+2]} \\
+data word & \texttt{n: .word 8} \\
+empty words & \texttt{stack: .space 8} \\
+shortcut & \texttt{MOV rd, rs} is \texttt{ADDI rd, rs, 0} \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\end{tablehere}
+
+% =====================================================================
+\section{How to Run Our Code}\label{sec:run}
+
+\begin{figurehere}
+\begin{tikzpicture}[>=Stealth, font=\sffamily\small,
+  file/.style={draw=frame, thick, fill=white, minimum width=2.3cm, minimum height=0.9cm, align=center},
+  tool/.style={draw=frame, thick, fill=boxc, rounded corners=3pt, minimum width=2.6cm, minimum height=0.9cm, align=center}]
+\node[file] (c) at (0,1.2) {\texttt{power.c}\\\scriptsize C code};
+\node[tool] (cc) at (2.9,1.2) {\textbf{s16cc}\\\scriptsize \texttt{compiler.c}};
+\node[file] (asm) at (5.8,1.2) {\texttt{power.asm}\\\scriptsize made by s16cc};
+\node[file] (hand) at (5.8,-0.4) {\texttt{factorial.asm}\\\scriptsize written by us};
+\node[tool] (as) at (8.8,0.4) {\textbf{Assembler}\\\scriptsize \texttt{assembler.c}};
+\node[tool] (ld) at (11.8,0.4) {\textbf{Loader}\\\scriptsize \texttt{loader.c}};
+\node[tool] (sim) at (14.8,0.4) {\textbf{CPU}\\\scriptsize \texttt{cpu.c}};
+\node[file] (tr) at (14.8,-1.3) {trace of every step};
+\draw[->, thick] (c) -- (cc);
+\draw[->, thick] (cc) -- (asm);
+\draw[->, thick] (asm) -- (as);
+\draw[->, thick] (hand) -- (as);
+\draw[->, thick] (as) -- (ld);
+\draw[->, thick] (ld) -- (sim);
+\draw[->, thick] (sim) -- (tr);
+\end{tikzpicture}
+\caption{How a program gets from source code to the simulated CPU: compile (C only), assemble, load into RAM, run. Everything is written in C.}
+\label{fig:toolchain}
+\end{figurehere}
+
+\begin{tablehere}
+\caption{Commands. Run them from the project folder. Type \texttt{make} first to build \texttt{spartan}. Only a C compiler is needed.}
+\label{tab:commands}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Command & What you get \\
+\midrule
+\texttt{./spartan run programs/factorial\_of\_3.asm} & small sample (3!): assemble, load, then every step \\
+\texttt{./spartan run programs/factorial.asm} & program 1 (8!), every step \\
+\texttt{./spartan run programs/power.c} & program 2 (C code), compiled and run, every step \\
+\texttt{./spartan run programs/power.c -{}-quiet} & just the answer \\
+\texttt{./spartan asm programs/factorial.asm} & the machine code \\
+\texttt{./spartan compile programs/power.c} & the C code turned into assembly \\
+\texttt{./spartan isa} & list of instructions \\
+\texttt{make test} & our 15 tests (one compares with gcc) \\
+\texttt{make report} & makes this PDF again from the simulator output \\
+\bottomrule
+\end{tabular}
+\end{tablehere}
+
+\begin{tablehere}
+\caption{Project files}
+\label{tab:files}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+File & What is in it \\
+\midrule
+\texttt{Makefile} & builds everything \\
+\texttt{src/main.c} & the command line tool \\
+\texttt{src/components.c} & the CPU parts: registers, ALU, flags, buses, memory, control unit \\
+\texttt{src/cpu.c} & connects the parts and runs fetch, decode, execute \\
+\texttt{src/loader.c} & the loader: puts the program into RAM over the bus \\
+\texttt{src/isa.c} & opcodes, formats, encoding and decoding \\
+\texttt{src/assembler.c} & the assembler (uses the ISA lookup table in \texttt{isa.c}) \\
+\texttt{src/compiler.c} & \texttt{s16cc}, our small C compiler \\
+\texttt{src/display.c} & prints the trace in the terminal \\
+\texttt{programs/} & \texttt{factorial\_of\_3.asm}, \texttt{factorial.asm}, \texttt{power.c} and extra C examples \\
+\texttt{tests/test\_spartan.c} & tests \\
+\texttt{report/} & the LaTeX for this report and \texttt{gen\_report.c}, which makes its tables \\
+\bottomrule
+\end{tabular}
+\end{tablehere}
+
+% =====================================================================
+\clearpage
+\section{Small Sample: 3! Step by Step}\label{sec:sample}
+
+Before the two big programs, here is a short run that is easy to follow. It works out
+$3! = 3 \times 2 \times 1 = 6$ with a loop. It is the same code as Program 1, only \texttt{n} starts at 3.
+Our simulator shows it in three phases, the same three you see with \texttt{./spartan run}:
+
+\begin{figurehere}
+\begin{tikzpicture}[>=Stealth, font=\sffamily\small,
+  ph/.style={draw=frame, thick, fill=boxc, rounded corners=3pt, minimum width=4.6cm, minimum height=1.25cm, align=center}]
+\node[ph] (a) at (0,0) {\textbf{1. ASSEMBLE}\\\footnotesize look up each name in the ISA table,\\\footnotesize fill in the bits};
+\node[ph] (l) at (5.7,0) {\textbf{2. LOAD}\\\footnotesize write each word into RAM\\\footnotesize over the system bus};
+\node[ph] (e) at (11.4,0) {\textbf{3. EXECUTE}\\\footnotesize fetch, decode, execute\\\footnotesize until HALT};
+\draw[->, thick, frame] (a) -- (l);
+\draw[->, thick, frame] (l) -- (e);
+\end{tikzpicture}
+\caption{The three phases of a run. All three happen inside our software simulation.}
+\label{fig:phases}
+\end{figurehere}
+
+\subsection{Phase 1: assemble with the ISA lookup table}
+
+The assembler reads one line at a time. It looks the instruction name up in the table below
+(\texttt{OPCODE\_TABLE} in \texttt{src/isa.c}). The table gives the 4-bit opcode and the format, and the
+format (Figure~\ref{fig:formats}) says where the registers, number or address go in the other 12 bits.
+Labels like \texttt{loop} and \texttt{n} are turned into their addresses first.
+
+\begin{tablehere}
+\caption{The assembler's ISA lookup table: instruction name, opcode bits, format}
+\label{tab:lookup}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lll@{\hspace{14pt}}lll@{\hspace{14pt}}lll@{\hspace{14pt}}lll@{}}
+\toprule
+Name & Op & Fmt & Name & Op & Fmt & Name & Op & Fmt & Name & Op & Fmt\\
+\midrule
+\rawinput generated/lookup_table.tex
+\bottomrule
+\end{tabular}
+\end{tablehere}
+
+\begin{tablehere}
+\caption{Phase 1 for \texttt{programs/factorial\_of\_3.asm}: each line, its table lookup and the machine code it became. Shaded rows are data.}
+\label{tab:sampleasm}
+\small
+\begin{tabular}{@{}>{\ttfamily}l >{\ttfamily}l >{\ttfamily}l >{\ttfamily}l >{\ttfamily}l@{}}
+\toprule
+\rmfamily Addr & \rmfamily Source & \rmfamily Lookup (opcode, format) & \rmfamily Machine code (binary) & \rmfamily Hex\\
+\midrule
+\rawinput generated/sample_assemble.tex
+\bottomrule
+\end{tabular}
+\end{tablehere}
+
+\subsection{Phase 2: load into RAM}
+
+The loader (\texttt{src/loader.c}) does not just copy an array. It writes each word into RAM over the
+system bus, one word at a time: the address goes on the address bus, the word goes on the data bus, and the
+control bus says MEM WRITE. The program always starts at address 0x00. After loading, the CPU is reset so
+PC = 0x00, which makes 0x00 the entry point.
+
+\begin{tablehere}
+\caption{Phase 2: every word the loader put on the system bus}
+\label{tab:sampleload}
+\small
+\begin{tabular}{@{}rllllll@{}}
+\toprule
+Load & Address bus & Data bus & Control bus & RAM written & What it is\\
+\midrule
+\rawinput generated/sample_load.tex
+\bottomrule
+\end{tabular}
+\end{tablehere}
+
+\begin{figurehere}
+\captionof{figure}{RAM before and after loading. The 11 red words were written by the loader.}
+\label{fig:sampleloadboxes}
+\input{generated/sample_load_boxes.tex}
+\end{figurehere}
+
+\subsection{Phase 3: execute}
+
+The CPU now runs the program: \sampleSteps{} instructions and \sampleCycles{} clock cycles.
+Every instruction starts with a fetch: MAR gets PC, memory sends the word at that address over the data bus
+into MDR, then MDR is copied into IR and PC goes up by 1. The table below shows what happens after that.
+
+{\small
+\setlength{\tabcolsep}{3.5pt}
+\begin{longtable}{@{}r l p{6.4cm} l c c c c c@{}}
+\caption{Walkthrough of 3!. The \emph{Bus} column only shows the extra memory access after the fetch.
+R1, R2 and Z are the values after the step. \texttt{n} and \texttt{result} are the memory words.}\label{tab:walk}\\
+\toprule
+Step & Instruction & What happens & Bus (execute) & R1 & R2 & Z & n & result\\
+\midrule
+\endfirsthead
+\toprule
+Step & Instruction & What happens & Bus (execute) & R1 & R2 & Z & n & result\\
+\midrule
+\endhead
+\rawinput generated/sample_walk.tex
+\bottomrule
+\end{longtable}
+}
+
+\begin{figurehere}
+\captionof{figure}{Memory before and after running the 3! sample. Word 0x09 (\texttt{n}) went from 3 to 0 and word 0x0A (\texttt{result}) went from 0 to 6.}
+\label{fig:sampleboxes}
+\input{generated/sample_boxes.tex}
+\end{figurehere}
+
+% =====================================================================
+\section{Program 1: 8! Written in Assembly}\label{sec:fact}
+
+\begin{tablehere}
+\caption{\texttt{programs/factorial.asm} and its machine code. Shaded rows are data.}
+\label{tab:factlist}
+\small
+\begin{tabular}{@{}>{\ttfamily}l >{\ttfamily}l >{\ttfamily}l >{\ttfamily}l >{\ttfamily}l l@{}}
+\toprule
+\rmfamily Addr & \rmfamily Hex & \rmfamily Binary (fields) & \rmfamily Label & \rmfamily Instruction & Comment\\
+\midrule
+\rawinput generated/fact_listing.tex
+\bottomrule
+\end{tabular}
+\end{tablehere}
+
+\begin{tablehere}
+\caption{Memory map of Program 1 (\factWords{} words)}
+\label{tab:factmap}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Addresses & Words & Used for & Labels\\
+\midrule
+\rawinput generated/fact_memmap.tex
+\bottomrule
+\end{tabular}
+\end{tablehere}
+
+\subsection{Program 1 trace}
+\captionof{figure}{Program 1 running: the machine after every instruction (\factSteps{} instructions, \factCycles{} clock cycles). Memory shown: 0x00 to 0x0F.}
+\label{fig:facttrace}
+\legend
+\input{generated/fact_trace.tex}
+
+% =====================================================================
+\clearpage
+\section{Program 2: $8^2$ Written in C}\label{sec:power}
+
+\captionof{figure}{\texttt{programs/power.c}. This is normal C, so gcc can build it too (it prints 64).}
+\label{fig:powerc}
+\input{generated/power_c.tex}
+
+{\small
+\setlength{\tabcolsep}{5pt}
+\begin{longtable}{@{}p{5.6cm} l l >{\ttfamily}l@{}}
+\caption{How our compiler \texttt{s16cc} translated \texttt{power.c}. Each C line is next to the
+instructions made from it, with the memory address and machine code of each one.}\label{tab:translation}\\
+\toprule
+C code & Addr & Hex & \rmfamily Assembly\\
+\midrule
+\endfirsthead
+\toprule
+C code & Addr & Hex & \rmfamily Assembly (continued)\\
+\midrule
+\endhead
+\rawinput generated/power_translation.tex
+\bottomrule
+\end{longtable}
+}
+
+\begin{tablehere}
+\caption{Memory map of Program 2 (\powerWords{} words)}
+\label{tab:powermap}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Addresses & Words & Used for & Labels\\
+\midrule
+\rawinput generated/power_memmap.tex
+\bottomrule
+\end{tabular}
+\end{tablehere}
+
+\clearpage
+\subsection{Program 2 trace}
+\captionof{figure}{Program 2 running: the machine after every instruction (\powerSteps{} instructions, \powerCycles{} clock cycles). Memory shown: 0x00 to 0x27. The stack is 0x20 to 0x27.}
+\label{fig:powertrace}
+\legend
+\input{generated/power_trace.tex}
+
+% =====================================================================
+\clearpage
+\section{Results}\label{sec:results}
+
+\begin{tablehere}
+\caption{Results}
+\label{tab:results}
+\begin{tabular}{@{}lllllll@{}}
+\toprule
+Program & File & Works out & Expected & Our output & Instructions & Clock cycles\\
+\midrule
+Sample & \texttt{factorial\_of\_3.asm} & 3! & 6 & \textbf{\sampleOut} & \sampleSteps & \sampleCycles \\
+1 & \texttt{factorial.asm} & 8! & 40320 & \textbf{\factOut} & \factSteps & \factCycles \\
+2 & \texttt{power.c} & $8^2$ & 64 & \textbf{\powerOut} & \powerSteps & \powerCycles \\
+\bottomrule
+\end{tabular}
+\end{tablehere}
+
+\begin{tablehere}
+\caption{Extra C programs in \texttt{programs/extras/}. Our tests check that they print the same thing as when built with gcc.}
+\label{tab:extras}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Program & C features used & Output \\
+\midrule
+\texttt{factorial.c} & \texttt{for} loop, \texttt{++}, function call & 40320 \\
+\texttt{fibonacci.c} & \texttt{for} loop, variable inside the loop & 0 1 1 2 3 5 8 13 21 34 \\
+\texttt{gcd.c} & \texttt{while}, \texttt{if/else}, two calls in one line & 12 501 \\
+\bottomrule
+\end{tabular}
+\end{tablehere}
+
+% =====================================================================
+\section{Who Did What}\label{sec:team}
+\begin{tablehere}
+\caption{Work done by each team member}
+\label{tab:team}
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+\toprule
+Member & Work \\
+\midrule
+\teamcontributions
+\bottomrule
+\end{tabularx}
+\end{tablehere}
+
+\end{document}

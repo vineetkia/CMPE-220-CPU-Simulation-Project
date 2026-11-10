@@ -1,0 +1,19 @@
+0x0 & \texttt{HALT} & N & \texttt{\textbf{0000} 0000 0000 0000} & stop the CPU & none & \texttt{HALT} & \texttt{0000}\\
+0x1 & \texttt{ADD} & R & \texttt{\textbf{0001} ddd sss ttt 000} & rd $\leftarrow$ rs + rt & Z N C V & \texttt{ADD R1, R2, R3} & \texttt{1298}\\
+0x2 & \texttt{SUB} & R & \texttt{\textbf{0010} ddd sss ttt 000} & rd $\leftarrow$ rs $-$ rt & Z N C V & \texttt{SUB R4, R4, R1} & \texttt{2908}\\
+0x3 & \texttt{MUL} & R & \texttt{\textbf{0011} ddd sss ttt 000} & rd $\leftarrow$ rs $\times$ rt & Z N C V & \texttt{MUL R1, R1, R2} & \texttt{3250}\\
+0x4 & \texttt{AND} & R & \texttt{\textbf{0100} ddd sss ttt 000} & rd $\leftarrow$ rs AND rt & Z N & \texttt{AND R3, R1, R2} & \texttt{4650}\\
+0x5 & \texttt{OR} & R & \texttt{\textbf{0101} ddd sss ttt 000} & rd $\leftarrow$ rs OR rt & Z N & \texttt{OR R3, R1, R2} & \texttt{5650}\\
+0x6 & \texttt{ADDI} & I & \texttt{\textbf{0110} ddd sss iiiiii} & rd $\leftarrow$ rs + imm6 & Z N C V & \texttt{ADDI R2, R2, -1} & \texttt{64BF}\\
+0x7 & \texttt{LI} & L & \texttt{\textbf{0111} ddd iiiiiiiii} & rd $\leftarrow$ imm9 & none & \texttt{LI R1, 8} & \texttt{7208}\\
+0x8 & \texttt{LD} & M & \texttt{\textbf{1000} rrr 0 aaaaaaaa} & r $\leftarrow$ M[addr8] & none & \texttt{LD R2, 0x09} & \texttt{8409}\\
+0x8 & \texttt{LD} & MX & \texttt{\textbf{1000} rrr 1 bbb iiiii} & r $\leftarrow$ M[rb+imm5] & none & \texttt{LD R1, [SP+2]} & \texttt{83E2}\\
+0x9 & \texttt{ST} & M & \texttt{\textbf{1001} rrr 0 aaaaaaaa} & M[addr8] $\leftarrow$ r & none & \texttt{ST R1, 0x0A} & \texttt{920A}\\
+0x9 & \texttt{ST} & MX & \texttt{\textbf{1001} rrr 1 bbb iiiii} & M[rb+imm5] $\leftarrow$ r & none & \texttt{ST R1, [R3-1]} & \texttt{937F}\\
+0xA & \texttt{CMP} & R & \texttt{\textbf{1010} 000 sss ttt 000} & flags from rs $-$ rt & Z N C V & \texttt{CMP R1, R0} & \texttt{A040}\\
+0xB & \texttt{Bcc} & B & \texttt{\textbf{1011} cccc aaaaaaaa} & if cond is true: PC $\leftarrow$ addr8 & none & \texttt{BNE 0x02} & \texttt{B202}\\
+0xC & \texttt{CALL} & B & \texttt{\textbf{1100} 0000 aaaaaaaa} & push PC, then PC $\leftarrow$ addr8 & none & \texttt{CALL 0x03} & \texttt{C003}\\
+0xD & \texttt{RET} & N & \texttt{\textbf{1101} 0000 0000 0000} & pop PC from the stack & none & \texttt{RET} & \texttt{D000}\\
+0xE & \texttt{PUSH} & S & \texttt{\textbf{1110} rrr 0 0000 0000} & SP $\leftarrow$ SP$-$1, M[SP] $\leftarrow$ r & none & \texttt{PUSH R1} & \texttt{E200}\\
+0xE & \texttt{POP} & S & \texttt{\textbf{1110} rrr 1 0000 0000} & r $\leftarrow$ M[SP], SP $\leftarrow$ SP+1 & none & \texttt{POP R1} & \texttt{E300}\\
+0xF & \texttt{OUT} & S & \texttt{\textbf{1111} rrr 0 0000 0000} & print r & none & \texttt{OUT R1} & \texttt{F200}\\

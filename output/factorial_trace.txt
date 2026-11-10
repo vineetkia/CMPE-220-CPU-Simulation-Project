@@ -1,0 +1,540 @@
+==============================================================================
+PHASE 1: ASSEMBLE   factorial.asm -> machine code
+  Each instruction name is looked up in the ISA table (OPCODE_TABLE in isa.c).
+  The table gives the opcode and the format. The operands fill the other bits.
+
+  ADDR  SOURCE                 LOOKUP               MACHINE CODE (binary)    HEX
+  0x00  LD R2, n               LD   -> 1000 (M)     1000 010 0 00001001      8409
+  0x01  LI R1, 1               LI   -> 0111 (L)     0111 001 000000001       7201
+  0x02  MUL R1, R1, R2         MUL  -> 0011 (R)     0011 001 001 010 000     3250
+  0x03  ST R1, result          ST   -> 1001 (M)     1001 001 0 00001010      920A
+  0x04  ADDI R2, R2, -1        ADDI -> 0110 (I)     0110 010 010 111111      64BF
+  0x05  ST R2, n               ST   -> 1001 (M)     1001 010 0 00001001      9409
+  0x06  BNE loop               BNE  -> 1011 (B)     1011 0010 00000010       B202
+  0x07  OUT R1                 OUT  -> 1111 (S)     1111 001 0 00000000      F200
+  0x08  HALT                   HALT -> 0000 (N)     0000 000000000000        0000
+  0x09  .word 8                data word            0000000000001000         0008
+  0x0A  .word 0                data word            0000000000000000         0000
+
+  Labels: start=0x00, loop=0x02, n=0x09, result=0x0A
+==============================================================================
+PHASE 2: LOAD   the loader writes each word into RAM over the system bus
+  RAM before loading: all 256 words are 0000
+
+  LOAD  ADDRESS BUS  DATA BUS  CONTROL BUS  RAM WORD           WHAT IT IS
+  1     0x00         8409      MEM WRITE    RAM[0x00] = 8409  LD R2, n
+  2     0x01         7201      MEM WRITE    RAM[0x01] = 7201  LI R1, 1
+  3     0x02         3250      MEM WRITE    RAM[0x02] = 3250  MUL R1, R1, R2
+  4     0x03         920A      MEM WRITE    RAM[0x03] = 920A  ST R1, result
+  5     0x04         64BF      MEM WRITE    RAM[0x04] = 64BF  ADDI R2, R2, -1
+  6     0x05         9409      MEM WRITE    RAM[0x05] = 9409  ST R2, n
+  7     0x06         B202      MEM WRITE    RAM[0x06] = B202  BNE loop
+  8     0x07         F200      MEM WRITE    RAM[0x07] = F200  OUT R1
+  9     0x08         0000      MEM WRITE    RAM[0x08] = 0000  HALT
+  10    0x09         0008      MEM WRITE    RAM[0x09] = 0008  data (n)
+  11    0x0A         0000      MEM WRITE    RAM[0x0A] = 0000  data (result)
+
+  RAM after loading (each [....] word was just written by the loader):
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00  [8409][7201][3250][920A][64BF][9409][B202][F200]  code
+  0x08  [0000][0008][0000] 0000  0000  0000  0000  0000   code/data
+
+  CPU reset: PC = 0x00 (the entry point), all registers and flags are 0
+==============================================================================
+PHASE 3: EXECUTE   fetch, decode, execute until HALT
+==============================================================================
+STEP 0  | program loaded from factorial.asm
+  cpu    : PC=00 IR=0000 MAR=00 MDR=0000   flags Z=0 N=0 C=0 V=0
+  regs   : R0=0000  R1=0000  R2=0000  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=8  result=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00  >8409  7201  3250  920A  64BF  9409  B202  F200   code
+  0x08   0000  0008  0000  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 1  | PC 0x00 | IR 8409 = 1000 010 0 00001001 | LD R2, n
+  result : R2 <- M[0x09] (n) = 8
+  bus    : fetch: read M[0x00] = 8409 | execute: read M[0x09] = 0008
+  alu    : not used
+  cpu    : PC=01 IR=8409 MAR=09 MDR=0008   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0000  R2=0008* R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=8  result=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409 >7201  3250  920A  64BF  9409  B202  F200   code
+  0x08   0000  0008  0000  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 2  | PC 0x01 | IR 7201 = 0111 001 000000001  | LI R1, 1
+  result : R1 <- 1
+  bus    : fetch: read M[0x01] = 7201
+  alu    : not used
+  cpu    : PC=02 IR=7201 MAR=01 MDR=7201   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0001* R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=8  result=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201 >3250  920A  64BF  9409  B202  F200   code
+  0x08   0000  0008  0000  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 3  | PC 0x02 | IR 3250 = 0011 001 001 010 000 | MUL R1, R1, R2
+  result : R1 <- 1 x 8 = 8
+  bus    : fetch: read M[0x02] = 3250
+  alu    : MUL  A=0001  B=0008  ->  0008
+  cpu    : PC=03 IR=3250 MAR=02 MDR=3250   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0008* R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=8  result=0
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250 >920A  64BF  9409  B202  F200   code
+  0x08   0000  0008  0000  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 4  | PC 0x03 | IR 920A = 1001 001 0 00001010 | ST R1, result
+  result : M[0x0A] (result) <- R1 = 8
+  bus    : fetch: read M[0x03] = 920A | execute: write M[0x0A] = 0008
+  alu    : not used
+  cpu    : PC=04 IR=920A MAR=0A MDR=0008   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0008  R2=0008  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=8  result=8
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A >64BF  9409  B202  F200   code
+  0x08   0000  0008 [0008] 0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 5  | PC 0x04 | IR 64BF = 0110 010 010 111111 | ADDI R2, R2, -1
+  result : R2 <- 8 + (-1) = 7
+  bus    : fetch: read M[0x04] = 64BF
+  alu    : ADD  A=0008  B=FFFF  ->  0007
+  cpu    : PC=05 IR=64BF MAR=04 MDR=64BF   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=0008  R2=0007* R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=8  result=8
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF >9409  B202  F200   code
+  0x08   0000  0008  0008  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 6  | PC 0x05 | IR 9409 = 1001 010 0 00001001 | ST R2, n
+  result : M[0x09] (n) <- R2 = 7
+  bus    : fetch: read M[0x05] = 9409 | execute: write M[0x09] = 0007
+  alu    : not used
+  cpu    : PC=06 IR=9409 MAR=09 MDR=0007   flags Z=0 N=0 C=1 V=0   cycles 4
+  regs   : R0=0000  R1=0008  R2=0007  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=7  result=8
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF  9409 >B202  F200   code
+  0x08   0000 [0007] 0008  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 7  | PC 0x06 | IR B202 = 1011 0010 00000010  | BNE loop
+  result : PC <- 0x02 (branch taken)
+  bus    : fetch: read M[0x06] = B202
+  alu    : not used
+  cpu    : PC=02 IR=B202 MAR=06 MDR=B202   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=0008  R2=0007  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=7  result=8
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201 >3250  920A  64BF  9409  B202  F200   code
+  0x08   0000  0007  0008  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 8  | PC 0x02 | IR 3250 = 0011 001 001 010 000 | MUL R1, R1, R2
+  result : R1 <- 8 x 7 = 56
+  bus    : fetch: read M[0x02] = 3250
+  alu    : MUL  A=0008  B=0007  ->  0038
+  cpu    : PC=03 IR=3250 MAR=02 MDR=3250   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0038* R2=0007  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=7  result=8
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250 >920A  64BF  9409  B202  F200   code
+  0x08   0000  0007  0008  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 9  | PC 0x03 | IR 920A = 1001 001 0 00001010 | ST R1, result
+  result : M[0x0A] (result) <- R1 = 56
+  bus    : fetch: read M[0x03] = 920A | execute: write M[0x0A] = 0038
+  alu    : not used
+  cpu    : PC=04 IR=920A MAR=0A MDR=0038   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0038  R2=0007  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=7  result=56
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A >64BF  9409  B202  F200   code
+  0x08   0000  0007 [0038] 0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 10 | PC 0x04 | IR 64BF = 0110 010 010 111111 | ADDI R2, R2, -1
+  result : R2 <- 7 + (-1) = 6
+  bus    : fetch: read M[0x04] = 64BF
+  alu    : ADD  A=0007  B=FFFF  ->  0006
+  cpu    : PC=05 IR=64BF MAR=04 MDR=64BF   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=0038  R2=0006* R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=7  result=56
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF >9409  B202  F200   code
+  0x08   0000  0007  0038  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 11 | PC 0x05 | IR 9409 = 1001 010 0 00001001 | ST R2, n
+  result : M[0x09] (n) <- R2 = 6
+  bus    : fetch: read M[0x05] = 9409 | execute: write M[0x09] = 0006
+  alu    : not used
+  cpu    : PC=06 IR=9409 MAR=09 MDR=0006   flags Z=0 N=0 C=1 V=0   cycles 4
+  regs   : R0=0000  R1=0038  R2=0006  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=6  result=56
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF  9409 >B202  F200   code
+  0x08   0000 [0006] 0038  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 12 | PC 0x06 | IR B202 = 1011 0010 00000010  | BNE loop
+  result : PC <- 0x02 (branch taken)
+  bus    : fetch: read M[0x06] = B202
+  alu    : not used
+  cpu    : PC=02 IR=B202 MAR=06 MDR=B202   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=0038  R2=0006  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=6  result=56
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201 >3250  920A  64BF  9409  B202  F200   code
+  0x08   0000  0006  0038  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 13 | PC 0x02 | IR 3250 = 0011 001 001 010 000 | MUL R1, R1, R2
+  result : R1 <- 56 x 6 = 336
+  bus    : fetch: read M[0x02] = 3250
+  alu    : MUL  A=0038  B=0006  ->  0150
+  cpu    : PC=03 IR=3250 MAR=02 MDR=3250   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0150* R2=0006  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=6  result=56
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250 >920A  64BF  9409  B202  F200   code
+  0x08   0000  0006  0038  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 14 | PC 0x03 | IR 920A = 1001 001 0 00001010 | ST R1, result
+  result : M[0x0A] (result) <- R1 = 336
+  bus    : fetch: read M[0x03] = 920A | execute: write M[0x0A] = 0150
+  alu    : not used
+  cpu    : PC=04 IR=920A MAR=0A MDR=0150   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0150  R2=0006  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=6  result=336
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A >64BF  9409  B202  F200   code
+  0x08   0000  0006 [0150] 0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 15 | PC 0x04 | IR 64BF = 0110 010 010 111111 | ADDI R2, R2, -1
+  result : R2 <- 6 + (-1) = 5
+  bus    : fetch: read M[0x04] = 64BF
+  alu    : ADD  A=0006  B=FFFF  ->  0005
+  cpu    : PC=05 IR=64BF MAR=04 MDR=64BF   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=0150  R2=0005* R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=6  result=336
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF >9409  B202  F200   code
+  0x08   0000  0006  0150  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 16 | PC 0x05 | IR 9409 = 1001 010 0 00001001 | ST R2, n
+  result : M[0x09] (n) <- R2 = 5
+  bus    : fetch: read M[0x05] = 9409 | execute: write M[0x09] = 0005
+  alu    : not used
+  cpu    : PC=06 IR=9409 MAR=09 MDR=0005   flags Z=0 N=0 C=1 V=0   cycles 4
+  regs   : R0=0000  R1=0150  R2=0005  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=5  result=336
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF  9409 >B202  F200   code
+  0x08   0000 [0005] 0150  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 17 | PC 0x06 | IR B202 = 1011 0010 00000010  | BNE loop
+  result : PC <- 0x02 (branch taken)
+  bus    : fetch: read M[0x06] = B202
+  alu    : not used
+  cpu    : PC=02 IR=B202 MAR=06 MDR=B202   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=0150  R2=0005  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=5  result=336
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201 >3250  920A  64BF  9409  B202  F200   code
+  0x08   0000  0005  0150  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 18 | PC 0x02 | IR 3250 = 0011 001 001 010 000 | MUL R1, R1, R2
+  result : R1 <- 336 x 5 = 1680
+  bus    : fetch: read M[0x02] = 3250
+  alu    : MUL  A=0150  B=0005  ->  0690
+  cpu    : PC=03 IR=3250 MAR=02 MDR=3250   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=0690* R2=0005  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=5  result=336
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250 >920A  64BF  9409  B202  F200   code
+  0x08   0000  0005  0150  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 19 | PC 0x03 | IR 920A = 1001 001 0 00001010 | ST R1, result
+  result : M[0x0A] (result) <- R1 = 1680
+  bus    : fetch: read M[0x03] = 920A | execute: write M[0x0A] = 0690
+  alu    : not used
+  cpu    : PC=04 IR=920A MAR=0A MDR=0690   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=0690  R2=0005  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=5  result=1680
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A >64BF  9409  B202  F200   code
+  0x08   0000  0005 [0690] 0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 20 | PC 0x04 | IR 64BF = 0110 010 010 111111 | ADDI R2, R2, -1
+  result : R2 <- 5 + (-1) = 4
+  bus    : fetch: read M[0x04] = 64BF
+  alu    : ADD  A=0005  B=FFFF  ->  0004
+  cpu    : PC=05 IR=64BF MAR=04 MDR=64BF   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=0690  R2=0004* R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=5  result=1680
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF >9409  B202  F200   code
+  0x08   0000  0005  0690  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 21 | PC 0x05 | IR 9409 = 1001 010 0 00001001 | ST R2, n
+  result : M[0x09] (n) <- R2 = 4
+  bus    : fetch: read M[0x05] = 9409 | execute: write M[0x09] = 0004
+  alu    : not used
+  cpu    : PC=06 IR=9409 MAR=09 MDR=0004   flags Z=0 N=0 C=1 V=0   cycles 4
+  regs   : R0=0000  R1=0690  R2=0004  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=4  result=1680
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF  9409 >B202  F200   code
+  0x08   0000 [0004] 0690  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 22 | PC 0x06 | IR B202 = 1011 0010 00000010  | BNE loop
+  result : PC <- 0x02 (branch taken)
+  bus    : fetch: read M[0x06] = B202
+  alu    : not used
+  cpu    : PC=02 IR=B202 MAR=06 MDR=B202   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=0690  R2=0004  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=4  result=1680
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201 >3250  920A  64BF  9409  B202  F200   code
+  0x08   0000  0004  0690  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 23 | PC 0x02 | IR 3250 = 0011 001 001 010 000 | MUL R1, R1, R2
+  result : R1 <- 1680 x 4 = 6720
+  bus    : fetch: read M[0x02] = 3250
+  alu    : MUL  A=0690  B=0004  ->  1A40
+  cpu    : PC=03 IR=3250 MAR=02 MDR=3250   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=1A40* R2=0004  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=4  result=1680
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250 >920A  64BF  9409  B202  F200   code
+  0x08   0000  0004  0690  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 24 | PC 0x03 | IR 920A = 1001 001 0 00001010 | ST R1, result
+  result : M[0x0A] (result) <- R1 = 6720
+  bus    : fetch: read M[0x03] = 920A | execute: write M[0x0A] = 1A40
+  alu    : not used
+  cpu    : PC=04 IR=920A MAR=0A MDR=1A40   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=1A40  R2=0004  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=4  result=6720
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A >64BF  9409  B202  F200   code
+  0x08   0000  0004 [1A40] 0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 25 | PC 0x04 | IR 64BF = 0110 010 010 111111 | ADDI R2, R2, -1
+  result : R2 <- 4 + (-1) = 3
+  bus    : fetch: read M[0x04] = 64BF
+  alu    : ADD  A=0004  B=FFFF  ->  0003
+  cpu    : PC=05 IR=64BF MAR=04 MDR=64BF   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=1A40  R2=0003* R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=4  result=6720
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF >9409  B202  F200   code
+  0x08   0000  0004  1A40  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 26 | PC 0x05 | IR 9409 = 1001 010 0 00001001 | ST R2, n
+  result : M[0x09] (n) <- R2 = 3
+  bus    : fetch: read M[0x05] = 9409 | execute: write M[0x09] = 0003
+  alu    : not used
+  cpu    : PC=06 IR=9409 MAR=09 MDR=0003   flags Z=0 N=0 C=1 V=0   cycles 4
+  regs   : R0=0000  R1=1A40  R2=0003  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=3  result=6720
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF  9409 >B202  F200   code
+  0x08   0000 [0003] 1A40  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 27 | PC 0x06 | IR B202 = 1011 0010 00000010  | BNE loop
+  result : PC <- 0x02 (branch taken)
+  bus    : fetch: read M[0x06] = B202
+  alu    : not used
+  cpu    : PC=02 IR=B202 MAR=06 MDR=B202   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=1A40  R2=0003  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=3  result=6720
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201 >3250  920A  64BF  9409  B202  F200   code
+  0x08   0000  0003  1A40  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 28 | PC 0x02 | IR 3250 = 0011 001 001 010 000 | MUL R1, R1, R2
+  result : R1 <- 6720 x 3 = 20160
+  bus    : fetch: read M[0x02] = 3250
+  alu    : MUL  A=1A40  B=0003  ->  4EC0
+  cpu    : PC=03 IR=3250 MAR=02 MDR=3250   flags Z=0 N=0 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=4EC0* R2=0003  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=3  result=6720
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250 >920A  64BF  9409  B202  F200   code
+  0x08   0000  0003  1A40  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 29 | PC 0x03 | IR 920A = 1001 001 0 00001010 | ST R1, result
+  result : M[0x0A] (result) <- R1 = 20160
+  bus    : fetch: read M[0x03] = 920A | execute: write M[0x0A] = 4EC0
+  alu    : not used
+  cpu    : PC=04 IR=920A MAR=0A MDR=4EC0   flags Z=0 N=0 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=4EC0  R2=0003  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=3  result=20160
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A >64BF  9409  B202  F200   code
+  0x08   0000  0003 [4EC0] 0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 30 | PC 0x04 | IR 64BF = 0110 010 010 111111 | ADDI R2, R2, -1
+  result : R2 <- 3 + (-1) = 2
+  bus    : fetch: read M[0x04] = 64BF
+  alu    : ADD  A=0003  B=FFFF  ->  0002
+  cpu    : PC=05 IR=64BF MAR=04 MDR=64BF   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=4EC0  R2=0002* R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=3  result=20160
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF >9409  B202  F200   code
+  0x08   0000  0003  4EC0  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 31 | PC 0x05 | IR 9409 = 1001 010 0 00001001 | ST R2, n
+  result : M[0x09] (n) <- R2 = 2
+  bus    : fetch: read M[0x05] = 9409 | execute: write M[0x09] = 0002
+  alu    : not used
+  cpu    : PC=06 IR=9409 MAR=09 MDR=0002   flags Z=0 N=0 C=1 V=0   cycles 4
+  regs   : R0=0000  R1=4EC0  R2=0002  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=2  result=20160
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF  9409 >B202  F200   code
+  0x08   0000 [0002] 4EC0  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 32 | PC 0x06 | IR B202 = 1011 0010 00000010  | BNE loop
+  result : PC <- 0x02 (branch taken)
+  bus    : fetch: read M[0x06] = B202
+  alu    : not used
+  cpu    : PC=02 IR=B202 MAR=06 MDR=B202   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=4EC0  R2=0002  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=2  result=20160
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201 >3250  920A  64BF  9409  B202  F200   code
+  0x08   0000  0002  4EC0  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 33 | PC 0x02 | IR 3250 = 0011 001 001 010 000 | MUL R1, R1, R2
+  result : R1 <- 20160 x 2 = 40320
+  bus    : fetch: read M[0x02] = 3250
+  alu    : MUL  A=4EC0  B=0002  ->  9D80
+  cpu    : PC=03 IR=3250 MAR=02 MDR=3250   flags Z=0 N=1 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=9D80* R2=0002  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=2  result=20160
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250 >920A  64BF  9409  B202  F200   code
+  0x08   0000  0002  4EC0  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 34 | PC 0x03 | IR 920A = 1001 001 0 00001010 | ST R1, result
+  result : M[0x0A] (result) <- R1 = 40320
+  bus    : fetch: read M[0x03] = 920A | execute: write M[0x0A] = 9D80
+  alu    : not used
+  cpu    : PC=04 IR=920A MAR=0A MDR=9D80   flags Z=0 N=1 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=9D80  R2=0002  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=2  result=40320
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A >64BF  9409  B202  F200   code
+  0x08   0000  0002 [9D80] 0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 35 | PC 0x04 | IR 64BF = 0110 010 010 111111 | ADDI R2, R2, -1
+  result : R2 <- 2 + (-1) = 1
+  bus    : fetch: read M[0x04] = 64BF
+  alu    : ADD  A=0002  B=FFFF  ->  0001
+  cpu    : PC=05 IR=64BF MAR=04 MDR=64BF   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=9D80  R2=0001* R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=2  result=40320
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF >9409  B202  F200   code
+  0x08   0000  0002  9D80  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 36 | PC 0x05 | IR 9409 = 1001 010 0 00001001 | ST R2, n
+  result : M[0x09] (n) <- R2 = 1
+  bus    : fetch: read M[0x05] = 9409 | execute: write M[0x09] = 0001
+  alu    : not used
+  cpu    : PC=06 IR=9409 MAR=09 MDR=0001   flags Z=0 N=0 C=1 V=0   cycles 4
+  regs   : R0=0000  R1=9D80  R2=0001  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=1  result=40320
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF  9409 >B202  F200   code
+  0x08   0000 [0001] 9D80  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 37 | PC 0x06 | IR B202 = 1011 0010 00000010  | BNE loop
+  result : PC <- 0x02 (branch taken)
+  bus    : fetch: read M[0x06] = B202
+  alu    : not used
+  cpu    : PC=02 IR=B202 MAR=06 MDR=B202   flags Z=0 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=9D80  R2=0001  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=1  result=40320
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201 >3250  920A  64BF  9409  B202  F200   code
+  0x08   0000  0001  9D80  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 38 | PC 0x02 | IR 3250 = 0011 001 001 010 000 | MUL R1, R1, R2
+  result : R1 <- 40320 x 1 = 40320
+  bus    : fetch: read M[0x02] = 3250
+  alu    : MUL  A=9D80  B=0001  ->  9D80
+  cpu    : PC=03 IR=3250 MAR=02 MDR=3250   flags Z=0 N=1 C=0 V=0   cycles 3
+  regs   : R0=0000  R1=9D80* R2=0001  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=1  result=40320
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250 >920A  64BF  9409  B202  F200   code
+  0x08   0000  0001  9D80  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 39 | PC 0x03 | IR 920A = 1001 001 0 00001010 | ST R1, result
+  result : M[0x0A] (result) <- R1 = 40320
+  bus    : fetch: read M[0x03] = 920A | execute: write M[0x0A] = 9D80
+  alu    : not used
+  cpu    : PC=04 IR=920A MAR=0A MDR=9D80   flags Z=0 N=1 C=0 V=0   cycles 4
+  regs   : R0=0000  R1=9D80  R2=0001  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=1  result=40320
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A >64BF  9409  B202  F200   code
+  0x08   0000  0001 [9D80] 0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 40 | PC 0x04 | IR 64BF = 0110 010 010 111111 | ADDI R2, R2, -1
+  result : R2 <- 1 + (-1) = 0
+  bus    : fetch: read M[0x04] = 64BF
+  alu    : ADD  A=0001  B=FFFF  ->  0000
+  cpu    : PC=05 IR=64BF MAR=04 MDR=64BF   flags Z=1 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=9D80  R2=0000* R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=1  result=40320
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF >9409  B202  F200   code
+  0x08   0000  0001  9D80  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 41 | PC 0x05 | IR 9409 = 1001 010 0 00001001 | ST R2, n
+  result : M[0x09] (n) <- R2 = 0
+  bus    : fetch: read M[0x05] = 9409 | execute: write M[0x09] = 0000
+  alu    : not used
+  cpu    : PC=06 IR=9409 MAR=09 MDR=0000   flags Z=1 N=0 C=1 V=0   cycles 4
+  regs   : R0=0000  R1=9D80  R2=0000  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=0  result=40320
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF  9409 >B202  F200   code
+  0x08   0000 [0000] 9D80  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 42 | PC 0x06 | IR B202 = 1011 0010 00000010  | BNE loop
+  result : branch not taken
+  bus    : fetch: read M[0x06] = B202
+  alu    : not used
+  cpu    : PC=07 IR=B202 MAR=06 MDR=B202   flags Z=1 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=9D80  R2=0000  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=0  result=40320
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF  9409  B202 >F200   code
+  0x08   0000  0000  9D80  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 43 | PC 0x07 | IR F200 = 1111 001 0 00000000 | OUT R1
+  result : output R1 = 40320
+  OUTPUT : 40320
+  bus    : fetch: read M[0x07] = F200 | execute: output port = 40320
+  alu    : not used
+  cpu    : PC=08 IR=F200 MAR=07 MDR=F200   flags Z=1 N=0 C=1 V=0   cycles 4
+  regs   : R0=0000  R1=9D80  R2=0000  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=0  result=40320
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF  9409  B202  F200   code
+  0x08  >0000  0000  9D80  0000  0000  0000  0000  0000   code/data
+==============================================================================
+STEP 44 | PC 0x08 | IR 0000 = 0000 000000000000   | HALT
+  result : processor halted
+  bus    : fetch: read M[0x08] = 0000
+  alu    : not used
+  cpu    : PC=09 IR=0000 MAR=08 MDR=0000   flags Z=1 N=0 C=1 V=0   cycles 3
+  regs   : R0=0000  R1=9D80  R2=0000  R3=0000  R4=0000  R5=0000  R6=0000  SP=0000 
+  vars   : n=0  result=40320
+  ADDR    +0    +1    +2    +3    +4    +5    +6    +7  
+  0x00   8409  7201  3250  920A  64BF  9409  B202  F200   code
+  0x08   0000  0000  9D80  0000  0000  0000  0000  0000   code/data
+==============================================================================
+Halted after 44 instructions (150 clock cycles).
+Program output: 40320
