@@ -111,7 +111,9 @@
 {\color{frame}\rule{0.6\textwidth}{1pt}\par}
 \vspace{18pt}
 {\large CMPE 220 CPU Design Project\par}
-\vspace{1.1in}
+\vspace{14pt}
+{\normalsize Code: \url{https://github.com/vineetkia/CMPE-220-CPU-Simulation-Project}\par}
+\vspace{0.9in}
 {\sffamily\large\bfseries Team Members\par}
 \vspace{8pt}
 {\large \teamnames\par}
@@ -320,7 +322,7 @@ R7 (SP) & stack pointer for PUSH, POP, CALL, RET & set to the top of the stack w
 \draw[ctl] (10.3,11.27) -- node[clbl, right, pos=0.1]{load} (10.3,5.9) -- (mar.north east);
 \end{tikzpicture}
 \caption{SPARTAN-16 block diagram. Solid arrows carry data or addresses. Dashed red arrows are control signals.
-Inside the CPU all parts share one internal bus. The CPU talks to memory and the output port only through MAR, MDR and the three system buses.}
+Inside the CPU all parts share one internal bus. The CPU reaches memory only through MAR, MDR and the three system buses. \texttt{OUT} sends a register over the data bus to the output port.}
 \label{fig:cpu}
 \end{figurehere}
 
@@ -406,6 +408,22 @@ shortcut & \texttt{MOV rd, rs} is \texttt{ADDI rd, rs, 0} \\
 
 % =====================================================================
 \section{How to Run Our Code}\label{sec:run}
+
+\begin{tablehere}
+\caption{Getting the code and running it for the first time. Needs \texttt{git}, a C compiler (\texttt{cc}, \texttt{gcc} or \texttt{clang}) and \texttt{make}.}
+\label{tab:getcode}
+\small
+\begin{tabular}{@{}cll@{}}
+\toprule
+Step & Command & What it does \\
+\midrule
+1 & {\footnotesize\texttt{git clone https://github.com/vineetkia/CMPE-220-CPU-Simulation-Project.git}} & downloads the code \\
+2 & \texttt{cd CMPE-220-CPU-Simulation-Project} & goes into the project folder \\
+3 & \texttt{make} & builds the \texttt{spartan} program \\
+4 & \texttt{./spartan run programs/factorial\_of\_3.asm} & runs the 3! sample \\
+\bottomrule
+\end{tabular}
+\end{tablehere}
 
 \begin{figurehere}
 \begin{tikzpicture}[>=Stealth, font=\sffamily\small,

@@ -11,7 +11,16 @@ You need a C compiler (`cc`, `gcc` or `clang`) and `make`. Nothing else has to b
 
 ## How to build and run it
 
-Open a terminal in this folder and build the `spartan` program:
+Get the code from GitHub (or download it as a ZIP from the same page):
+
+```bash
+git clone https://github.com/vineetkia/CMPE-220-CPU-Simulation-Project.git
+```
+```bash
+cd CMPE-220-CPU-Simulation-Project
+```
+
+Then build the `spartan` program:
 
 ```bash
 make
@@ -166,4 +175,8 @@ It has a few limits:
 
 ## Team
 
-The team names and who did what are in `report/team.tex`. The PDF reads them from there.
+- Vineet Kumar: instruction set and lookup table, CPU parts, fetch / decode / execute, the 3! and 8! programs
+- Sakshat Nandkumar Patil: assembler, loader, trace printer, tests
+- Aishwarya Madhave: s16cc C compiler and power.c, CPU diagram, report and its generator
+
+The PDF reads the names and contributions from `report/team.tex`.

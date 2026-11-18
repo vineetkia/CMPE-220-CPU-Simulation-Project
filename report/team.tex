@@ -2,26 +2,24 @@
 % After editing, build the PDF again with:  make report
 
 \newcommand{\teamnames}{%
-  Team Member 1 \\
-  Team Member 2 \\
-  Team Member 3 \\
-  Team Member 4
+  Vineet Kumar \\
+  Sakshat Nandkumar Patil \\
+  Aishwarya Madhave
 }
 
 % One row per person:   Name & what they did \\ \midrule
 \newcommand{\teamcontributions}{%
-  Team Member 1 &
-    Designed the instruction set: opcodes, the 8 instruction formats and the branch conditions
-    (\texttt{src/isa.c}). Drew the CPU block diagram (Figure~\ref{fig:cpu}). \\ \midrule
-  Team Member 2 &
-    Wrote the CPU parts in \texttt{src/components.c} (registers, ALU and flags, buses, memory,
-    control unit) and the fetch, decode, execute loop in \texttt{src/cpu.c}.
-    Wrote \texttt{factorial.asm} and the 3! sample. \\ \midrule
-  Team Member 3 &
-    Wrote the assembler with the ISA lookup table (\texttt{src/assembler.c}, \texttt{src/isa.c}),
-    the loader that writes the program into RAM over the bus (\texttt{src/loader.c})
-    and the tests (\texttt{tests/test\_spartan.c}). \\ \midrule
-  Team Member 4 &
-    Wrote the \texttt{s16cc} C compiler (\texttt{src/compiler.c}) and \texttt{power.c},
-    checked the C programs against gcc, wrote the trace printer (\texttt{src/display.c}) and the report program (\texttt{report/gen\_report.c}). \\
+  Vineet Kumar &
+    Designed the instruction set: opcodes, the 8 instruction formats, the branch conditions
+    and the ISA lookup table (\texttt{src/isa.c}). Wrote the CPU parts in \texttt{src/components.c}
+    (registers, ALU and flags, buses, RAM, control unit) and the fetch, decode, execute loop in
+    \texttt{src/cpu.c}. Wrote the 3! sample and the 8! program in assembly. \\ \midrule
+  Sakshat Nandkumar Patil &
+    Wrote the assembler (\texttt{src/assembler.c}), the loader that writes the program into RAM
+    over the bus (\texttt{src/loader.c}), the trace printer (\texttt{src/display.c}) and the
+    tests (\texttt{tests/test\_spartan.c}). \\ \midrule
+  Aishwarya Madhave &
+    Wrote the \texttt{s16cc} C compiler (\texttt{src/compiler.c}) and the C program \texttt{power.c}.
+    Drew the CPU block diagram (Figure~\ref{fig:cpu}). Put together this report and the program
+    that makes its tables (\texttt{report/gen\_report.c}). \\
 }
