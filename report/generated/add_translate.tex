@@ -1,0 +1,9 @@
+\texttt{00} & \texttt{c = a + b;} & \texttt{LD R1, a} & \texttt{1000 001 0 00000110} & \texttt{8206}\\
+\texttt{01} & \texttt{} & \texttt{LD R2, b} & \texttt{1000 010 0 00000111} & \texttt{8407}\\
+\texttt{02} & \texttt{} & \texttt{ADD R3, R1, R2} & \texttt{0001 011 001 010 000} & \texttt{1650}\\
+\texttt{03} & \texttt{} & \texttt{ST R3, c} & \texttt{1001 011 0 00001000} & \texttt{9608}\\
+\texttt{04} & \texttt{printf("\%d\textbackslash{}n", c);} & \texttt{OUT R3} & \texttt{1111 011 0 00000000} & \texttt{F600}\\
+\texttt{05} & \texttt{return 0;} & \texttt{HALT} & \texttt{0000 000000000000} & \texttt{0000}\\
+\rowcolor{datac}\texttt{06} & \texttt{int a = 5;} & \texttt{a = 5} & \texttt{0000000000000101} & \texttt{0005}\\
+\rowcolor{datac}\texttt{07} & \texttt{int b = 7;} & \texttt{b = 7} & \texttt{0000000000000111} & \texttt{0007}\\
+\rowcolor{datac}\texttt{08} & \texttt{int c;} & \texttt{c = 0} & \texttt{0000000000000000} & \texttt{0000}\\

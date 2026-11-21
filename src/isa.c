@@ -1,8 +1,11 @@
 /*
  * isa.c
  * Everything about the instruction set lives here: register names, opcodes,
- * instruction formats, and the code that turns instructions into 16-bit
- * words and back. The assembler, the CPU and the report all use this file.
+ * instruction formats, and the code that splits a 16-bit instruction word
+ * into its fields (decoding). The CPU, the trace printer and the report use it.
+ *
+ * Our programs are translated into binary by hand (see programs.c), so there
+ * is no assembler: this file only goes from binary to fields, never back.
  */
 #include <stdio.h>
 #include <string.h>
@@ -45,37 +48,6 @@ static const Field F_N[]  = { {"op", 4}, {"000000000000", 12}, {NULL, 0} };
 const char *const FORMAT_NAMES[FMT_COUNT] = { "R", "I", "L", "M", "MX", "B", "S", "N" };
 const Field *const FORMATS[FMT_COUNT] = { F_R, F_I, F_L, F_M, F_MX, F_B, F_S, F_N };
 
-/* The assembler's lookup table. To translate a line, the assembler finds its
- * mnemonic here, which gives the opcode bits and the format, and the format
- * says where the operands go. MOV and NOP are shortcuts handled by the
- * assembler itself (they become ADDI). */
-const OpcodeEntry OPCODE_TABLE[] = {
-    {"HALT", OP_HALT, FMT_N, 0},
-    {"ADD",  OP_ADD,  FMT_R, 0},
-    {"SUB",  OP_SUB,  FMT_R, 0},
-    {"MUL",  OP_MUL,  FMT_R, 0},
-    {"AND",  OP_AND,  FMT_R, 0},
-    {"OR",   OP_OR,   FMT_R, 0},
-    {"ADDI", OP_ADDI, FMT_I, 0},
-    {"LI",   OP_LI,   FMT_L, 0},
-    {"LD",   OP_LD,   FMT_M, 0},
-    {"ST",   OP_ST,   FMT_M, 0},
-    {"CMP",  OP_CMP,  FMT_R, 0},
-    {"JMP",  OP_BR,   FMT_B, 0},
-    {"BEQ",  OP_BR,   FMT_B, 1},
-    {"BNE",  OP_BR,   FMT_B, 2},
-    {"BLT",  OP_BR,   FMT_B, 3},
-    {"BGE",  OP_BR,   FMT_B, 4},
-    {"BGT",  OP_BR,   FMT_B, 5},
-    {"BLE",  OP_BR,   FMT_B, 6},
-    {"CALL", OP_CALL, FMT_B, 0},
-    {"RET",  OP_RET,  FMT_N, 0},
-    {"PUSH", OP_STK,  FMT_S, 0},
-    {"POP",  OP_STK,  FMT_S, 1},
-    {"OUT",  OP_OUT,  FMT_S, 0},
-};
-const int OPCODE_TABLE_SIZE = sizeof(OPCODE_TABLE) / sizeof(OPCODE_TABLE[0]);
-
 const IsaRow ISA_TABLE[] = {
     {"HALT", OP_HALT, "N", "HALT", "stop the CPU", "-"},
     {"ADD", OP_ADD, "R", "ADD rd, rs, rt", "rd = rs + rt", "ZNCV"},
@@ -110,67 +82,6 @@ int to_signed16(int value)
 {
     return sign_extend(value, 16);
 }
-
-int fits_signed(int value, int bits)
-{
-    return value >= -(1 << (bits - 1)) && value < (1 << (bits - 1));
-}
-
-const OpcodeEntry *lookup_mnemonic(const char *mnemonic)
-{
-    int i;
-    for (i = 0; i < OPCODE_TABLE_SIZE; i++)
-        if (strcmp(OPCODE_TABLE[i].mnemonic, mnemonic) == 0)
-            return &OPCODE_TABLE[i];
-    return NULL;
-}
-
-int branch_cond(const char *name)
-{
-    const OpcodeEntry *entry = lookup_mnemonic(name);
-    if (entry && entry->opcode == OP_BR)
-        return entry->extra;
-    return -1;
-}
-
-
-/* ----- building instruction words from their fields ----- */
-
-uint16_t enc_r(int op, int rd, int rs, int rt)
-{
-    return (uint16_t)((op << 12) | (rd << 9) | (rs << 6) | (rt << 3));
-}
-
-uint16_t enc_i(int op, int rd, int rs, int imm6)
-{
-    return (uint16_t)((op << 12) | (rd << 9) | (rs << 6) | (imm6 & 0x3F));
-}
-
-uint16_t enc_l(int op, int rd, int imm9)
-{
-    return (uint16_t)((op << 12) | (rd << 9) | (imm9 & 0x1FF));
-}
-
-uint16_t enc_m_abs(int op, int r, int addr8)
-{
-    return (uint16_t)((op << 12) | (r << 9) | (addr8 & 0xFF));
-}
-
-uint16_t enc_m_ind(int op, int r, int rb, int imm5)
-{
-    return (uint16_t)((op << 12) | (r << 9) | (1 << 8) | (rb << 5) | (imm5 & 0x1F));
-}
-
-uint16_t enc_b(int op, int cond, int addr8)
-{
-    return (uint16_t)((op << 12) | (cond << 8) | (addr8 & 0xFF));
-}
-
-uint16_t enc_s(int op, int r, int s)
-{
-    return (uint16_t)((op << 12) | (r << 9) | (s << 8));
-}
-
 
 /* ----- splitting an instruction word back into fields ----- */
 
@@ -210,6 +121,11 @@ Format decoded_format(const Decoded *d)
     default:
         return FMT_N;
     }
+}
+
+const char *cond_name(int cond)
+{
+    return (cond >= 0 && cond < NUM_CONDS) ? COND_NAMES[cond] : "?";
 }
 
 const char *decoded_mnemonic(const Decoded *d, char *buf, size_t size)
@@ -318,5 +234,17 @@ const char *binary_fields(uint16_t word, char *buf, size_t size)
         pos += field->width;
     }
     buf[out] = '\0';
+    return buf;
+}
+
+/* The 4-bit opcode in binary, like "0011". */
+const char *opcode_bits(int opcode, char *buf, size_t size)
+{
+    int i;
+    if (size < 5)
+        return "";
+    for (i = 0; i < 4; i++)
+        buf[i] = ((opcode >> (3 - i)) & 1) ? '1' : '0';
+    buf[4] = '\0';
     return buf;
 }

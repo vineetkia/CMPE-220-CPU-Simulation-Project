@@ -155,6 +155,15 @@ void sysbus_output(SystemBus *bus, int value, BusPhase phase)
 }
 
 
+/* ----- clock ----- */
+
+unsigned long clock_tick(Clock *clock)
+{
+    clock->cycle++;
+    return clock->cycle;
+}
+
+
 /* ----- control unit ----- */
 
 Decoded control_decode(unsigned ir_value)

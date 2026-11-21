@@ -1,0 +1,20 @@
+\begin{lstlisting}[style=csrc]
+/* The whole computer. */
+typedef struct {
+    /* special purpose registers */
+    Register pc, ir, mar, mdr;
+    Flags flags;
+    /* general purpose registers R0..R7 */
+    RegisterFile regs;
+    /* the rest of the CPU */
+    ALU alu;
+    Clock clock;
+    /* outside the CPU, connected by the system bus */
+    SystemBus bus;
+    Memory memory;
+    OutputPort out_port;
+
+    int halted;
+    int steps;
+} CPU;
+\end{lstlisting}

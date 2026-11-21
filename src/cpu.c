@@ -1,10 +1,11 @@
 /*
  * cpu.c
- * Connects the parts from components.c and runs the instruction cycle:
+ * Connects the parts from components.c and runs the instruction cycle.
+ * Every phase takes one tick of the clock:
  *
- *   FETCH    MAR <- PC, read memory over the bus into MDR, IR <- MDR, PC <- PC + 1
- *   DECODE   the control unit splits IR into opcode, registers and immediate
- *   EXECUTE  use the ALU, read/write memory over the bus, update registers
+ *   tick 1  FETCH    MAR <- PC, read memory over the bus into MDR, IR <- MDR, PC <- PC + 1
+ *   tick 2  DECODE   the control unit splits IR into opcode, registers and immediate
+ *   tick 3  EXECUTE  use the ALU, read/write memory over the bus, update registers
  *
  * cpu_step() runs one instruction and fills in a StepRecord, which is a
  * snapshot of the whole machine after that instruction.
@@ -14,8 +15,9 @@
 
 #include "cpu.h"
 
-/* Power on: every register is 0 (so PC = 0x00, the entry point) and RAM is empty.
- * The loader (loader.c) then puts the program into RAM. */
+/* Power on: every register is 0 (so PC = 0x00, where the program starts),
+ * RAM is empty and the clock is at 0. We then put the program into RAM by hand
+ * (put_in_ram() in programs.c). */
 void cpu_init(CPU *cpu)
 {
     memset(cpu, 0, sizeof *cpu);
@@ -135,7 +137,8 @@ static void exec_stack(CPU *cpu, const Decoded *d, StepRecord *rec)
 int cpu_step(CPU *cpu, const SymbolTable *symbols, StepRecord *rec, char *err, size_t err_size)
 {
     Decoded d;
-    int pc, used, i;
+    int pc;
+    char bits[32];
 
     if (cpu->halted) {
         snprintf(err, err_size, "CPU is halted");
@@ -150,15 +153,23 @@ int cpu_step(CPU *cpu, const SymbolTable *symbols, StepRecord *rec, char *err, s
     cpu->bus.log_count = 0;
     cpu->alu.last.used = 0;
 
-    /* 1. FETCH */
+    /* 1. FETCH (clock tick 1) */
+    rec->clock[0] = clock_tick(&cpu->clock);
     pc = (int)cpu->pc.value;
     register_load(&cpu->ir, (int)mem_read(cpu, pc, PHASE_FETCH));
     register_load(&cpu->pc, pc + 1);
+    snprintf(rec->fetch, sizeof rec->fetch, "MAR <- PC = %02X, RAM[%02X] -> MDR = %04X, IR <- MDR, PC <- %02X",
+             pc, pc, cpu->mdr.value, cpu->pc.value);
 
-    /* 2. DECODE */
+    /* 2. DECODE (clock tick 2) */
+    rec->clock[1] = clock_tick(&cpu->clock);
     d = control_decode(cpu->ir.value);
+    disassemble((uint16_t)cpu->ir.value, symbols, rec->text, sizeof rec->text);
+    snprintf(rec->decode, sizeof rec->decode, "IR = %s -> %s",
+             binary_fields((uint16_t)cpu->ir.value, bits, sizeof bits), rec->text);
 
-    /* 3. EXECUTE */
+    /* 3. EXECUTE (clock tick 3) */
+    rec->clock[2] = clock_tick(&cpu->clock);
     switch (d.op) {
     case OP_HALT:
         cpu->halted = 1;
@@ -224,19 +235,12 @@ int cpu_step(CPU *cpu, const SymbolTable *symbols, StepRecord *rec, char *err, s
     }
     }
 
-    /* clock cycles: fetch + decode + execute, plus one for each extra bus transfer */
-    used = 3;
-    for (i = 0; i < cpu->bus.log_count; i++)
-        if (cpu->bus.log[i].phase != PHASE_FETCH)
-            used++;
-    cpu->cycles += used;
     cpu->steps++;
 
     /* take the snapshot */
     rec->step = cpu->steps;
     rec->pc = pc;
     rec->ir = cpu->ir.value;
-    disassemble((uint16_t)cpu->ir.value, symbols, rec->text, sizeof rec->text);
     memcpy(rec->regs, cpu->regs.values, sizeof rec->regs);
     rec->flags = cpu->flags;
     rec->next_pc = (int)cpu->pc.value;
@@ -247,7 +251,6 @@ int cpu_step(CPU *cpu, const SymbolTable *symbols, StepRecord *rec, char *err, s
     memcpy(rec->bus_log, cpu->bus.log, sizeof rec->bus_log);
     rec->bus_count = cpu->bus.log_count;
     rec->alu = cpu->alu.last;
-    rec->cycles = used;
     return 0;
 }
 

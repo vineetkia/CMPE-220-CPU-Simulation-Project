@@ -12,6 +12,7 @@
  *   SystemBus     address bus + data bus + control bus
  *   Memory        main memory (RAM)
  *   OutputPort    the output device (prints numbers)
+ *   Clock         the CPU clock: one tick for each fetch, decode and execute
  *   control_*()   the control unit: decodes instructions, checks branch conditions
  *
  * cpu.c wires these parts together.
@@ -84,7 +85,7 @@ typedef struct {
 } OutputPort;
 
 /* One transfer on the system bus. */
-typedef enum { PHASE_LOAD, PHASE_FETCH, PHASE_EXECUTE } BusPhase;
+typedef enum { PHASE_FETCH, PHASE_EXECUTE } BusPhase;
 typedef enum { XFER_READ, XFER_WRITE, XFER_OUT } XferKind;
 
 typedef struct {
@@ -112,6 +113,14 @@ void     sysbus_init(SystemBus *bus, Memory *memory, OutputPort *out_port);
 unsigned sysbus_read(SystemBus *bus, int addr, BusPhase phase);
 void     sysbus_write(SystemBus *bus, int addr, int value, BusPhase phase);
 void     sysbus_output(SystemBus *bus, int value, BusPhase phase);
+
+/* The CPU clock. Each tick moves the CPU one step through the instruction cycle:
+ * tick 1 = fetch, tick 2 = decode, tick 3 = execute, then the next instruction. */
+typedef struct {
+    unsigned long cycle;    /* how many ticks so far */
+} Clock;
+
+unsigned long clock_tick(Clock *clock);    /* one tick, returns the new cycle number */
 
 /* The control unit */
 Decoded control_decode(unsigned ir_value);

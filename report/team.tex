@@ -10,16 +10,15 @@
 % One row per person:   Name & what they did \\ \midrule
 \newcommand{\teamcontributions}{%
   Vineet Kumar &
-    Designed the instruction set: opcodes, the 8 instruction formats, the branch conditions
-    and the ISA lookup table (\texttt{src/isa.c}). Wrote the CPU parts in \texttt{src/components.c}
-    (registers, ALU and flags, buses, RAM, control unit) and the fetch, decode, execute loop in
-    \texttt{src/cpu.c}. Wrote the 3! sample and the 8! program in assembly. \\ \midrule
+    Designed the instruction set: opcodes, formats, binary codes and branch conditions
+    (\texttt{src/isa.c}). Wrote the CPU parts in \texttt{src/components.c} (registers, ALU and
+    flags, buses, RAM, clock, control unit) and the fetch, decode, execute cycle in \texttt{src/cpu.c}. \\ \midrule
   Sakshat Nandkumar Patil &
-    Wrote the assembler (\texttt{src/assembler.c}), the loader that writes the program into RAM
-    over the bus (\texttt{src/loader.c}), the trace printer (\texttt{src/display.c}) and the
-    tests (\texttt{tests/test\_spartan.c}). \\ \midrule
+    Translated both C programs by hand into our assembly and then into binary
+    (\texttt{src/programs.c}). Wrote the trace printer that shows the CPU and RAM in binary,
+    hex and ASCII (\texttt{src/display.c}) and the tests (\texttt{tests/test\_spartan.c}). \\ \midrule
   Aishwarya Madhave &
-    Wrote the \texttt{s16cc} C compiler (\texttt{src/compiler.c}) and the C program \texttt{power.c}.
-    Drew the CPU block diagram (Figure~\ref{fig:cpu}). Put together this report and the program
-    that makes its tables (\texttt{report/gen\_report.c}). \\
+    Wrote the two C programs (\texttt{programs/add.c}, \texttt{programs/multiply.c}).
+    Drew the CPU, bus and RAM diagram (Figure~\ref{fig:cpu}). Put together this report and the
+    program that makes its tables (\texttt{report/gen\_report.c}). \\
 }

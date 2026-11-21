@@ -1,0 +1,15 @@
+\texttt{00} & \texttt{/* get a and b */} & \texttt{LD R1, a} & \texttt{1000 001 0 00001100} & \texttt{820C}\\
+\texttt{01} & \texttt{} & \texttt{LD R2, b} & \texttt{1000 010 0 00001101} & \texttt{840D}\\
+\texttt{02} & \texttt{result = 0;} & \texttt{LI R3, 0} & \texttt{0111 011 000000000} & \texttt{7600}\\
+\texttt{03} & \texttt{while (b > 0) \{} & \texttt{CMP R2, R0} & \texttt{1010 000 010 000 000} & \texttt{A080}\\
+\texttt{04} & \texttt{} & \texttt{BLE done} & \texttt{1011 0110 00001010} & \texttt{B60A}\\
+\texttt{05} & \texttt{result = result + a;} & \texttt{ADD R3, R3, R1} & \texttt{0001 011 011 001 000} & \texttt{16C8}\\
+\texttt{06} & \texttt{} & \texttt{ST R3, result} & \texttt{1001 011 0 00001110} & \texttt{960E}\\
+\texttt{07} & \texttt{b = b - 1;} & \texttt{ADDI R2, R2, -1} & \texttt{0110 010 010 111111} & \texttt{64BF}\\
+\texttt{08} & \texttt{} & \texttt{ST R2, b} & \texttt{1001 010 0 00001101} & \texttt{940D}\\
+\texttt{09} & \texttt{\}} & \texttt{JMP loop} & \texttt{1011 0000 00000011} & \texttt{B003}\\
+\texttt{0A} & \texttt{printf("\%d\textbackslash{}n", result);} & \texttt{OUT R3} & \texttt{1111 011 0 00000000} & \texttt{F600}\\
+\texttt{0B} & \texttt{return 0;} & \texttt{HALT} & \texttt{0000 000000000000} & \texttt{0000}\\
+\rowcolor{datac}\texttt{0C} & \texttt{int a = 5;} & \texttt{a = 5} & \texttt{0000000000000101} & \texttt{0005}\\
+\rowcolor{datac}\texttt{0D} & \texttt{int b = 3;} & \texttt{b = 3} & \texttt{0000000000000011} & \texttt{0003}\\
+\rowcolor{datac}\texttt{0E} & \texttt{int result = 0;} & \texttt{result = 0} & \texttt{0000000000000000} & \texttt{0000}\\

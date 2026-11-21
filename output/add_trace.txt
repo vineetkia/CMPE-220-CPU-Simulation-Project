@@ -1,0 +1,239 @@
+==============================================================================
+PROGRAM: add  (Add two numbers)
+==============================================================================
+STEP 1: THE C PROGRAM
+    #include <stdio.h>
+    
+    int a = 5;
+    int b = 7;
+    int c;
+    
+    int main(void)
+    {
+        c = a + b;
+        printf("%d\n", c);
+        return 0;
+    }
+==============================================================================
+STEP 2: TRANSLATED BY HAND INTO OUR ASSEMBLY, THEN INTO BINARY
+  ADDR  C LINE                      ASSEMBLY          BINARY (fields)        HEX
+  0x00  c = a + b;                  LD R1, a          1000 001 0 00000110    8206
+  0x01                              LD R2, b          1000 010 0 00000111    8407
+  0x02                              ADD R3, R1, R2    0001 011 001 010 000   1650
+  0x03                              ST R3, c          1001 011 0 00001000    9608
+  0x04  printf("%d\n", c);          OUT R3            1111 011 0 00000000    F600
+  0x05  return 0;                   HALT              0000 000000000000      0000
+  0x06  int a = 5;                  a = 5             0000000000000101       0005
+  0x07  int b = 7;                  b = 7             0000000000000111       0007
+  0x08  int c;                      c = 0             0000000000000000       0000
+==============================================================================
+STEP 3: THE BINARY PUT INTO RAM BY HAND (the program starts at 0x00, PC = 00)
+     ADDR  BINARY            HEX   ASCII  CONTENT
+  >  0x00  1000001000000110  8206  ..     LD R1, a
+     0x01  1000010000000111  8407  ..     LD R2, b
+     0x02  0001011001010000  1650  .P     ADD R3, R1, R2
+     0x03  1001011000001000  9608  ..     ST R3, c
+     0x04  1111011000000000  F600  ..     OUT R3
+     0x05  0000000000000000  0000  ..     HALT
+     0x06  0000000000000101  0005  ..     a = 5
+     0x07  0000000000000111  0007  ..     b = 7
+     0x08  0000000000000000  0000  ..     c = 0
+==============================================================================
+STEP 4: RUN IT (each instruction = fetch, decode, execute = 3 clock ticks)
+==============================================================================
+INSTRUCTION 1   (clock ticks 1 to 3)   LD R1, a
+  tick 1   FETCH    MAR <- PC = 00, RAM[00] -> MDR = 8206, IR <- MDR, PC <- 01
+  tick 2   DECODE   IR = 1000 001 0 00000110 -> LD R1, a
+  tick 3   EXECUTE  R1 <- M[0x06] (a) = 5
+
+  CPU special purpose registers
+          binary            hex     decimal  ASCII
+    PC    00000001          0x01    1        .
+    IR    1000001000000110  0x8206  33286    ..
+    MAR   00000110          0x06    6        .
+    MDR   0000000000000101  0x0005  5        ..
+    FLAGS  Z=0 N=0 C=0 V=0
+  CPU general purpose registers (binary, decimal, ASCII)
+    R0 = 0000000000000000 (    0) ..      R4 = 0000000000000000 (    0) ..
+    R1 = 0000000000000101 (    5) .. *    R5 = 0000000000000000 (    0) ..
+    R2 = 0000000000000000 (    0) ..      R6 = 0000000000000000 (    0) ..
+    R3 = 0000000000000000 (    0) ..      SP = 0000000000000000 (    0) ..
+  CPU ALU (binary, decimal, ASCII)
+    not used by this instruction
+
+  RAM (> next instruction, * just written)
+     ADDR  BINARY            HEX   ASCII  CONTENT
+     0x00  1000001000000110  8206  ..     LD R1, a
+  >  0x01  1000010000000111  8407  ..     LD R2, b
+     0x02  0001011001010000  1650  .P     ADD R3, R1, R2
+     0x03  1001011000001000  9608  ..     ST R3, c
+     0x04  1111011000000000  F600  ..     OUT R3
+     0x05  0000000000000000  0000  ..     HALT
+     0x06  0000000000000101  0005  ..     a = 5
+     0x07  0000000000000111  0007  ..     b = 7
+     0x08  0000000000000000  0000  ..     c = 0
+==============================================================================
+INSTRUCTION 2   (clock ticks 4 to 6)   LD R2, b
+  tick 4   FETCH    MAR <- PC = 01, RAM[01] -> MDR = 8407, IR <- MDR, PC <- 02
+  tick 5   DECODE   IR = 1000 010 0 00000111 -> LD R2, b
+  tick 6   EXECUTE  R2 <- M[0x07] (b) = 7
+
+  CPU special purpose registers
+          binary            hex     decimal  ASCII
+    PC    00000010          0x02    2        .
+    IR    1000010000000111  0x8407  33799    ..
+    MAR   00000111          0x07    7        .
+    MDR   0000000000000111  0x0007  7        ..
+    FLAGS  Z=0 N=0 C=0 V=0
+  CPU general purpose registers (binary, decimal, ASCII)
+    R0 = 0000000000000000 (    0) ..      R4 = 0000000000000000 (    0) ..
+    R1 = 0000000000000101 (    5) ..      R5 = 0000000000000000 (    0) ..
+    R2 = 0000000000000111 (    7) .. *    R6 = 0000000000000000 (    0) ..
+    R3 = 0000000000000000 (    0) ..      SP = 0000000000000000 (    0) ..
+  CPU ALU (binary, decimal, ASCII)
+    not used by this instruction
+
+  RAM (> next instruction, * just written)
+     ADDR  BINARY            HEX   ASCII  CONTENT
+     0x00  1000001000000110  8206  ..     LD R1, a
+     0x01  1000010000000111  8407  ..     LD R2, b
+  >  0x02  0001011001010000  1650  .P     ADD R3, R1, R2
+     0x03  1001011000001000  9608  ..     ST R3, c
+     0x04  1111011000000000  F600  ..     OUT R3
+     0x05  0000000000000000  0000  ..     HALT
+     0x06  0000000000000101  0005  ..     a = 5
+     0x07  0000000000000111  0007  ..     b = 7
+     0x08  0000000000000000  0000  ..     c = 0
+==============================================================================
+INSTRUCTION 3   (clock ticks 7 to 9)   ADD R3, R1, R2
+  tick 7   FETCH    MAR <- PC = 02, RAM[02] -> MDR = 1650, IR <- MDR, PC <- 03
+  tick 8   DECODE   IR = 0001 011 001 010 000 -> ADD R3, R1, R2
+  tick 9   EXECUTE  R3 <- 5 + 7 = 12
+
+  CPU special purpose registers
+          binary            hex     decimal  ASCII
+    PC    00000011          0x03    3        .
+    IR    0001011001010000  0x1650  5712     .P
+    MAR   00000010          0x02    2        .
+    MDR   0001011001010000  0x1650  5712     .P
+    FLAGS  Z=0 N=0 C=0 V=0
+  CPU general purpose registers (binary, decimal, ASCII)
+    R0 = 0000000000000000 (    0) ..      R4 = 0000000000000000 (    0) ..
+    R1 = 0000000000000101 (    5) ..      R5 = 0000000000000000 (    0) ..
+    R2 = 0000000000000111 (    7) ..      R6 = 0000000000000000 (    0) ..
+    R3 = 0000000000001100 (   12) .. *    SP = 0000000000000000 (    0) ..
+  CPU ALU (binary, decimal, ASCII)
+    ADD  A = 0000000000000101 (5) ..   B = 0000000000000111 (7) ..
+         result = 0000000000001100 (12) ..
+
+  RAM (> next instruction, * just written)
+     ADDR  BINARY            HEX   ASCII  CONTENT
+     0x00  1000001000000110  8206  ..     LD R1, a
+     0x01  1000010000000111  8407  ..     LD R2, b
+     0x02  0001011001010000  1650  .P     ADD R3, R1, R2
+  >  0x03  1001011000001000  9608  ..     ST R3, c
+     0x04  1111011000000000  F600  ..     OUT R3
+     0x05  0000000000000000  0000  ..     HALT
+     0x06  0000000000000101  0005  ..     a = 5
+     0x07  0000000000000111  0007  ..     b = 7
+     0x08  0000000000000000  0000  ..     c = 0
+==============================================================================
+INSTRUCTION 4   (clock ticks 10 to 12)   ST R3, c
+  tick 10  FETCH    MAR <- PC = 03, RAM[03] -> MDR = 9608, IR <- MDR, PC <- 04
+  tick 11  DECODE   IR = 1001 011 0 00001000 -> ST R3, c
+  tick 12  EXECUTE  M[0x08] (c) <- R3 = 12
+
+  CPU special purpose registers
+          binary            hex     decimal  ASCII
+    PC    00000100          0x04    4        .
+    IR    1001011000001000  0x9608  38408    ..
+    MAR   00001000          0x08    8        .
+    MDR   0000000000001100  0x000C  12       ..
+    FLAGS  Z=0 N=0 C=0 V=0
+  CPU general purpose registers (binary, decimal, ASCII)
+    R0 = 0000000000000000 (    0) ..      R4 = 0000000000000000 (    0) ..
+    R1 = 0000000000000101 (    5) ..      R5 = 0000000000000000 (    0) ..
+    R2 = 0000000000000111 (    7) ..      R6 = 0000000000000000 (    0) ..
+    R3 = 0000000000001100 (   12) ..      SP = 0000000000000000 (    0) ..
+  CPU ALU (binary, decimal, ASCII)
+    not used by this instruction
+
+  RAM (> next instruction, * just written)
+     ADDR  BINARY            HEX   ASCII  CONTENT
+     0x00  1000001000000110  8206  ..     LD R1, a
+     0x01  1000010000000111  8407  ..     LD R2, b
+     0x02  0001011001010000  1650  .P     ADD R3, R1, R2
+     0x03  1001011000001000  9608  ..     ST R3, c
+  >  0x04  1111011000000000  F600  ..     OUT R3
+     0x05  0000000000000000  0000  ..     HALT
+     0x06  0000000000000101  0005  ..     a = 5
+     0x07  0000000000000111  0007  ..     b = 7
+  *  0x08  0000000000001100  000C  ..     c = 12
+==============================================================================
+INSTRUCTION 5   (clock ticks 13 to 15)   OUT R3
+  tick 13  FETCH    MAR <- PC = 04, RAM[04] -> MDR = F600, IR <- MDR, PC <- 05
+  tick 14  DECODE   IR = 1111 011 0 00000000 -> OUT R3
+  tick 15  EXECUTE  output R3 = 12
+  OUTPUT   12
+
+  CPU special purpose registers
+          binary            hex     decimal  ASCII
+    PC    00000101          0x05    5        .
+    IR    1111011000000000  0xF600  62976    ..
+    MAR   00000100          0x04    4        .
+    MDR   1111011000000000  0xF600  62976    ..
+    FLAGS  Z=0 N=0 C=0 V=0
+  CPU general purpose registers (binary, decimal, ASCII)
+    R0 = 0000000000000000 (    0) ..      R4 = 0000000000000000 (    0) ..
+    R1 = 0000000000000101 (    5) ..      R5 = 0000000000000000 (    0) ..
+    R2 = 0000000000000111 (    7) ..      R6 = 0000000000000000 (    0) ..
+    R3 = 0000000000001100 (   12) ..      SP = 0000000000000000 (    0) ..
+  CPU ALU (binary, decimal, ASCII)
+    not used by this instruction
+
+  RAM (> next instruction, * just written)
+     ADDR  BINARY            HEX   ASCII  CONTENT
+     0x00  1000001000000110  8206  ..     LD R1, a
+     0x01  1000010000000111  8407  ..     LD R2, b
+     0x02  0001011001010000  1650  .P     ADD R3, R1, R2
+     0x03  1001011000001000  9608  ..     ST R3, c
+     0x04  1111011000000000  F600  ..     OUT R3
+  >  0x05  0000000000000000  0000  ..     HALT
+     0x06  0000000000000101  0005  ..     a = 5
+     0x07  0000000000000111  0007  ..     b = 7
+     0x08  0000000000001100  000C  ..     c = 12
+==============================================================================
+INSTRUCTION 6   (clock ticks 16 to 18)   HALT
+  tick 16  FETCH    MAR <- PC = 05, RAM[05] -> MDR = 0000, IR <- MDR, PC <- 06
+  tick 17  DECODE   IR = 0000 000000000000 -> HALT
+  tick 18  EXECUTE  processor halted
+
+  CPU special purpose registers
+          binary            hex     decimal  ASCII
+    PC    00000110          0x06    6        .
+    IR    0000000000000000  0x0000  0        ..
+    MAR   00000101          0x05    5        .
+    MDR   0000000000000000  0x0000  0        ..
+    FLAGS  Z=0 N=0 C=0 V=0
+  CPU general purpose registers (binary, decimal, ASCII)
+    R0 = 0000000000000000 (    0) ..      R4 = 0000000000000000 (    0) ..
+    R1 = 0000000000000101 (    5) ..      R5 = 0000000000000000 (    0) ..
+    R2 = 0000000000000111 (    7) ..      R6 = 0000000000000000 (    0) ..
+    R3 = 0000000000001100 (   12) ..      SP = 0000000000000000 (    0) ..
+  CPU ALU (binary, decimal, ASCII)
+    not used by this instruction
+
+  RAM (> next instruction, * just written)
+     ADDR  BINARY            HEX   ASCII  CONTENT
+     0x00  1000001000000110  8206  ..     LD R1, a
+     0x01  1000010000000111  8407  ..     LD R2, b
+     0x02  0001011001010000  1650  .P     ADD R3, R1, R2
+     0x03  1001011000001000  9608  ..     ST R3, c
+     0x04  1111011000000000  F600  ..     OUT R3
+     0x05  0000000000000000  0000  ..     HALT
+     0x06  0000000000000101  0005  ..     a = 5
+     0x07  0000000000000111  0007  ..     b = 7
+     0x08  0000000000001100  000C  ..     c = 12
+==============================================================================
+Halted after 6 instructions (18 clock ticks).
+Program output: 12

@@ -1,0 +1,910 @@
+\noindent\begin{tcolorbox}[stepbox, title={Instruction 1 \hfill ticks 1 to 3 \quad LD R1, a}]
+\textcolor{dim}{tick 1} \textbf{F} MAR$\leftarrow$00, MDR$\leftarrow$RAM[00]=820C, IR$\leftarrow$MDR, PC$\leftarrow$01\\
+\textcolor{dim}{tick 2} \textbf{D} 1000 001 0 00001100 = LD R1, a\\
+\textcolor{dim}{tick 3} \textbf{E} R1 $\leftarrow$ M[0x0C] (a) = 5\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000001 [.] \hfill IR~~1000001000001100 [..]\\
+MAR 00001100 [.] \hfill MDR 0000000000000101 [..]\\
+FLAGS Z=0 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+\textcolor{wrt}{\textbf{R1 0000000000000101 5 [..]}} \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000000 0 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000000000 0 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+\rowcolor{pcc}01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000011 & 0003 & .. & b = 3\\
+\rowcolor{datac}0E & 0000000000000000 & 0000 & .. & result = 0\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Instruction 2 \hfill ticks 4 to 6 \quad LD R2, b}]
+\textcolor{dim}{tick 4} \textbf{F} MAR$\leftarrow$01, MDR$\leftarrow$RAM[01]=840D, IR$\leftarrow$MDR, PC$\leftarrow$02\\
+\textcolor{dim}{tick 5} \textbf{D} 1000 010 0 00001101 = LD R2, b\\
+\textcolor{dim}{tick 6} \textbf{E} R2 $\leftarrow$ M[0x0D] (b) = 3\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000010 [.] \hfill IR~~1000010000001101 [..]\\
+MAR 00001101 [.] \hfill MDR 0000000000000011 [..]\\
+FLAGS Z=0 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+\textcolor{wrt}{\textbf{R2 0000000000000011 3 [..]}} \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000000000 0 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+\rowcolor{pcc}02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000011 & 0003 & .. & b = 3\\
+\rowcolor{datac}0E & 0000000000000000 & 0000 & .. & result = 0\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Instruction 3 \hfill ticks 7 to 9 \quad LI R3, 0}]
+\textcolor{dim}{tick 7} \textbf{F} MAR$\leftarrow$02, MDR$\leftarrow$RAM[02]=7600, IR$\leftarrow$MDR, PC$\leftarrow$03\\
+\textcolor{dim}{tick 8} \textbf{D} 0111 011 000000000 = LI R3, 0\\
+\textcolor{dim}{tick 9} \textbf{E} R3 $\leftarrow$ 0\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000011 [.] \hfill IR~~0111011000000000 [v.]\\
+MAR 00000010 [.] \hfill MDR 0111011000000000 [v.]\\
+FLAGS Z=0 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000011 3 [..] \hfill R6 0000000000000000 0 [..]\\
+\textcolor{wrt}{\textbf{R3 0000000000000000 0 [..]}} \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+\rowcolor{pcc}03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000011 & 0003 & .. & b = 3\\
+\rowcolor{datac}0E & 0000000000000000 & 0000 & .. & result = 0\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Instruction 4 \hfill ticks 10 to 12 \quad CMP R2, R0}]
+\textcolor{dim}{tick 10} \textbf{F} MAR$\leftarrow$03, MDR$\leftarrow$RAM[03]=A080, IR$\leftarrow$MDR, PC$\leftarrow$04\\
+\textcolor{dim}{tick 11} \textbf{D} 1010 000 010 000 000 = CMP R2, R0\\
+\textcolor{dim}{tick 12} \textbf{E} compare 3 with 0, set flags\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000100 [.] \hfill IR~~1010000010000000 [..]\\
+MAR 00000011 [.] \hfill MDR 1010000010000000 [..]\\
+FLAGS Z=0 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000011 3 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000000000 0 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU} SUB: 3 $-$ 0 = 3 [..] \hfill 0000000000000011\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+\rowcolor{pcc}04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000011 & 0003 & .. & b = 3\\
+\rowcolor{datac}0E & 0000000000000000 & 0000 & .. & result = 0\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Instruction 5 \hfill ticks 13 to 15 \quad BLE done}]
+\textcolor{dim}{tick 13} \textbf{F} MAR$\leftarrow$04, MDR$\leftarrow$RAM[04]=B60A, IR$\leftarrow$MDR, PC$\leftarrow$05\\
+\textcolor{dim}{tick 14} \textbf{D} 1011 0110 00001010 = BLE done\\
+\textcolor{dim}{tick 15} \textbf{E} branch not taken\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000101 [.] \hfill IR~~1011011000001010 [..]\\
+MAR 00000100 [.] \hfill MDR 1011011000001010 [..]\\
+FLAGS Z=0 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000011 3 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000000000 0 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+\rowcolor{pcc}05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000011 & 0003 & .. & b = 3\\
+\rowcolor{datac}0E & 0000000000000000 & 0000 & .. & result = 0\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Instruction 6 \hfill ticks 16 to 18 \quad ADD R3, R3, R1}]
+\textcolor{dim}{tick 16} \textbf{F} MAR$\leftarrow$05, MDR$\leftarrow$RAM[05]=16C8, IR$\leftarrow$MDR, PC$\leftarrow$06\\
+\textcolor{dim}{tick 17} \textbf{D} 0001 011 011 001 000 = ADD R3, R3, R1\\
+\textcolor{dim}{tick 18} \textbf{E} R3 $\leftarrow$ 0 + 5 = 5\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000110 [.] \hfill IR~~0001011011001000 [..]\\
+MAR 00000101 [.] \hfill MDR 0001011011001000 [..]\\
+FLAGS Z=0 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000011 3 [..] \hfill R6 0000000000000000 0 [..]\\
+\textcolor{wrt}{\textbf{R3 0000000000000101 5 [..]}} \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU} ADD: 0 + 5 = 5 [..] \hfill 0000000000000101\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+\rowcolor{pcc}06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000011 & 0003 & .. & b = 3\\
+\rowcolor{datac}0E & 0000000000000000 & 0000 & .. & result = 0\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Instruction 7 \hfill ticks 19 to 21 \quad ST R3, result}]
+\textcolor{dim}{tick 19} \textbf{F} MAR$\leftarrow$06, MDR$\leftarrow$RAM[06]=960E, IR$\leftarrow$MDR, PC$\leftarrow$07\\
+\textcolor{dim}{tick 20} \textbf{D} 1001 011 0 00001110 = ST R3, result\\
+\textcolor{dim}{tick 21} \textbf{E} M[0x0E] (result) $\leftarrow$ R3 = 5\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000111 [.] \hfill IR~~1001011000001110 [..]\\
+MAR 00001110 [.] \hfill MDR 0000000000000101 [..]\\
+FLAGS Z=0 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000011 3 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000000101 5 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+\rowcolor{pcc}07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000011 & 0003 & .. & b = 3\\
+\rowcolor{wrt}\textcolor{white}{\textbf{0E}} & \textcolor{white}{\textbf{0000000000000101}} & \textcolor{white}{\textbf{0005}} & \textcolor{white}{\textbf{..}} & \textcolor{white}{\textbf{result = 5}}\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Instruction 8 \hfill ticks 22 to 24 \quad ADDI R2, R2, -1}]
+\textcolor{dim}{tick 22} \textbf{F} MAR$\leftarrow$07, MDR$\leftarrow$RAM[07]=64BF, IR$\leftarrow$MDR, PC$\leftarrow$08\\
+\textcolor{dim}{tick 23} \textbf{D} 0110 010 010 111111 = ADDI R2, R2, -1\\
+\textcolor{dim}{tick 24} \textbf{E} R2 $\leftarrow$ 3 + (-1) = 2\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00001000 [.] \hfill IR~~0110010010111111 [d.]\\
+MAR 00000111 [.] \hfill MDR 0110010010111111 [d.]\\
+FLAGS Z=0 N=0 C=1 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+\textcolor{wrt}{\textbf{R2 0000000000000010 2 [..]}} \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000000101 5 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU} ADD: 3 + -1 = 2 [..] \hfill 0000000000000010\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+\rowcolor{pcc}08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000011 & 0003 & .. & b = 3\\
+\rowcolor{datac}0E & 0000000000000101 & 0005 & .. & result = 5\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Instruction 9 \hfill ticks 25 to 27 \quad ST R2, b}]
+\textcolor{dim}{tick 25} \textbf{F} MAR$\leftarrow$08, MDR$\leftarrow$RAM[08]=940D, IR$\leftarrow$MDR, PC$\leftarrow$09\\
+\textcolor{dim}{tick 26} \textbf{D} 1001 010 0 00001101 = ST R2, b\\
+\textcolor{dim}{tick 27} \textbf{E} M[0x0D] (b) $\leftarrow$ R2 = 2\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00001001 [.] \hfill IR~~1001010000001101 [..]\\
+MAR 00001101 [.] \hfill MDR 0000000000000010 [..]\\
+FLAGS Z=0 N=0 C=1 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000010 2 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000000101 5 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+\rowcolor{pcc}09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{wrt}\textcolor{white}{\textbf{0D}} & \textcolor{white}{\textbf{0000000000000010}} & \textcolor{white}{\textbf{0002}} & \textcolor{white}{\textbf{..}} & \textcolor{white}{\textbf{b = 2}}\\
+\rowcolor{datac}0E & 0000000000000101 & 0005 & .. & result = 5\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Instruction 10 \hfill ticks 28 to 30 \quad JMP loop}]
+\textcolor{dim}{tick 28} \textbf{F} MAR$\leftarrow$09, MDR$\leftarrow$RAM[09]=B003, IR$\leftarrow$MDR, PC$\leftarrow$0A\\
+\textcolor{dim}{tick 29} \textbf{D} 1011 0000 00000011 = JMP loop\\
+\textcolor{dim}{tick 30} \textbf{E} PC $\leftarrow$ 0x03 (jump)\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000011 [.] \hfill IR~~1011000000000011 [..]\\
+MAR 00001001 [.] \hfill MDR 1011000000000011 [..]\\
+FLAGS Z=0 N=0 C=1 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000010 2 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000000101 5 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+\rowcolor{pcc}03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000010 & 0002 & .. & b = 2\\
+\rowcolor{datac}0E & 0000000000000101 & 0005 & .. & result = 5\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Instruction 11 \hfill ticks 31 to 33 \quad CMP R2, R0}]
+\textcolor{dim}{tick 31} \textbf{F} MAR$\leftarrow$03, MDR$\leftarrow$RAM[03]=A080, IR$\leftarrow$MDR, PC$\leftarrow$04\\
+\textcolor{dim}{tick 32} \textbf{D} 1010 000 010 000 000 = CMP R2, R0\\
+\textcolor{dim}{tick 33} \textbf{E} compare 2 with 0, set flags\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000100 [.] \hfill IR~~1010000010000000 [..]\\
+MAR 00000011 [.] \hfill MDR 1010000010000000 [..]\\
+FLAGS Z=0 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000010 2 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000000101 5 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU} SUB: 2 $-$ 0 = 2 [..] \hfill 0000000000000010\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+\rowcolor{pcc}04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000010 & 0002 & .. & b = 2\\
+\rowcolor{datac}0E & 0000000000000101 & 0005 & .. & result = 5\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Instruction 12 \hfill ticks 34 to 36 \quad BLE done}]
+\textcolor{dim}{tick 34} \textbf{F} MAR$\leftarrow$04, MDR$\leftarrow$RAM[04]=B60A, IR$\leftarrow$MDR, PC$\leftarrow$05\\
+\textcolor{dim}{tick 35} \textbf{D} 1011 0110 00001010 = BLE done\\
+\textcolor{dim}{tick 36} \textbf{E} branch not taken\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000101 [.] \hfill IR~~1011011000001010 [..]\\
+MAR 00000100 [.] \hfill MDR 1011011000001010 [..]\\
+FLAGS Z=0 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000010 2 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000000101 5 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+\rowcolor{pcc}05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000010 & 0002 & .. & b = 2\\
+\rowcolor{datac}0E & 0000000000000101 & 0005 & .. & result = 5\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Instruction 13 \hfill ticks 37 to 39 \quad ADD R3, R3, R1}]
+\textcolor{dim}{tick 37} \textbf{F} MAR$\leftarrow$05, MDR$\leftarrow$RAM[05]=16C8, IR$\leftarrow$MDR, PC$\leftarrow$06\\
+\textcolor{dim}{tick 38} \textbf{D} 0001 011 011 001 000 = ADD R3, R3, R1\\
+\textcolor{dim}{tick 39} \textbf{E} R3 $\leftarrow$ 5 + 5 = 10\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000110 [.] \hfill IR~~0001011011001000 [..]\\
+MAR 00000101 [.] \hfill MDR 0001011011001000 [..]\\
+FLAGS Z=0 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000010 2 [..] \hfill R6 0000000000000000 0 [..]\\
+\textcolor{wrt}{\textbf{R3 0000000000001010 10 [..]}} \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU} ADD: 5 + 5 = 10 [..] \hfill 0000000000001010\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+\rowcolor{pcc}06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000010 & 0002 & .. & b = 2\\
+\rowcolor{datac}0E & 0000000000000101 & 0005 & .. & result = 5\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Instruction 14 \hfill ticks 40 to 42 \quad ST R3, result}]
+\textcolor{dim}{tick 40} \textbf{F} MAR$\leftarrow$06, MDR$\leftarrow$RAM[06]=960E, IR$\leftarrow$MDR, PC$\leftarrow$07\\
+\textcolor{dim}{tick 41} \textbf{D} 1001 011 0 00001110 = ST R3, result\\
+\textcolor{dim}{tick 42} \textbf{E} M[0x0E] (result) $\leftarrow$ R3 = 10\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000111 [.] \hfill IR~~1001011000001110 [..]\\
+MAR 00001110 [.] \hfill MDR 0000000000001010 [..]\\
+FLAGS Z=0 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000010 2 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000001010 10 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+\rowcolor{pcc}07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000010 & 0002 & .. & b = 2\\
+\rowcolor{wrt}\textcolor{white}{\textbf{0E}} & \textcolor{white}{\textbf{0000000000001010}} & \textcolor{white}{\textbf{000A}} & \textcolor{white}{\textbf{..}} & \textcolor{white}{\textbf{result = 10}}\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Instruction 15 \hfill ticks 43 to 45 \quad ADDI R2, R2, -1}]
+\textcolor{dim}{tick 43} \textbf{F} MAR$\leftarrow$07, MDR$\leftarrow$RAM[07]=64BF, IR$\leftarrow$MDR, PC$\leftarrow$08\\
+\textcolor{dim}{tick 44} \textbf{D} 0110 010 010 111111 = ADDI R2, R2, -1\\
+\textcolor{dim}{tick 45} \textbf{E} R2 $\leftarrow$ 2 + (-1) = 1\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00001000 [.] \hfill IR~~0110010010111111 [d.]\\
+MAR 00000111 [.] \hfill MDR 0110010010111111 [d.]\\
+FLAGS Z=0 N=0 C=1 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+\textcolor{wrt}{\textbf{R2 0000000000000001 1 [..]}} \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000001010 10 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU} ADD: 2 + -1 = 1 [..] \hfill 0000000000000001\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+\rowcolor{pcc}08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000010 & 0002 & .. & b = 2\\
+\rowcolor{datac}0E & 0000000000001010 & 000A & .. & result = 10\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Instruction 16 \hfill ticks 46 to 48 \quad ST R2, b}]
+\textcolor{dim}{tick 46} \textbf{F} MAR$\leftarrow$08, MDR$\leftarrow$RAM[08]=940D, IR$\leftarrow$MDR, PC$\leftarrow$09\\
+\textcolor{dim}{tick 47} \textbf{D} 1001 010 0 00001101 = ST R2, b\\
+\textcolor{dim}{tick 48} \textbf{E} M[0x0D] (b) $\leftarrow$ R2 = 1\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00001001 [.] \hfill IR~~1001010000001101 [..]\\
+MAR 00001101 [.] \hfill MDR 0000000000000001 [..]\\
+FLAGS Z=0 N=0 C=1 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000001 1 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000001010 10 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+\rowcolor{pcc}09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{wrt}\textcolor{white}{\textbf{0D}} & \textcolor{white}{\textbf{0000000000000001}} & \textcolor{white}{\textbf{0001}} & \textcolor{white}{\textbf{..}} & \textcolor{white}{\textbf{b = 1}}\\
+\rowcolor{datac}0E & 0000000000001010 & 000A & .. & result = 10\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Instruction 17 \hfill ticks 49 to 51 \quad JMP loop}]
+\textcolor{dim}{tick 49} \textbf{F} MAR$\leftarrow$09, MDR$\leftarrow$RAM[09]=B003, IR$\leftarrow$MDR, PC$\leftarrow$0A\\
+\textcolor{dim}{tick 50} \textbf{D} 1011 0000 00000011 = JMP loop\\
+\textcolor{dim}{tick 51} \textbf{E} PC $\leftarrow$ 0x03 (jump)\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000011 [.] \hfill IR~~1011000000000011 [..]\\
+MAR 00001001 [.] \hfill MDR 1011000000000011 [..]\\
+FLAGS Z=0 N=0 C=1 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000001 1 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000001010 10 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+\rowcolor{pcc}03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000001 & 0001 & .. & b = 1\\
+\rowcolor{datac}0E & 0000000000001010 & 000A & .. & result = 10\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Instruction 18 \hfill ticks 52 to 54 \quad CMP R2, R0}]
+\textcolor{dim}{tick 52} \textbf{F} MAR$\leftarrow$03, MDR$\leftarrow$RAM[03]=A080, IR$\leftarrow$MDR, PC$\leftarrow$04\\
+\textcolor{dim}{tick 53} \textbf{D} 1010 000 010 000 000 = CMP R2, R0\\
+\textcolor{dim}{tick 54} \textbf{E} compare 1 with 0, set flags\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000100 [.] \hfill IR~~1010000010000000 [..]\\
+MAR 00000011 [.] \hfill MDR 1010000010000000 [..]\\
+FLAGS Z=0 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000001 1 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000001010 10 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU} SUB: 1 $-$ 0 = 1 [..] \hfill 0000000000000001\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+\rowcolor{pcc}04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000001 & 0001 & .. & b = 1\\
+\rowcolor{datac}0E & 0000000000001010 & 000A & .. & result = 10\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Instruction 19 \hfill ticks 55 to 57 \quad BLE done}]
+\textcolor{dim}{tick 55} \textbf{F} MAR$\leftarrow$04, MDR$\leftarrow$RAM[04]=B60A, IR$\leftarrow$MDR, PC$\leftarrow$05\\
+\textcolor{dim}{tick 56} \textbf{D} 1011 0110 00001010 = BLE done\\
+\textcolor{dim}{tick 57} \textbf{E} branch not taken\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000101 [.] \hfill IR~~1011011000001010 [..]\\
+MAR 00000100 [.] \hfill MDR 1011011000001010 [..]\\
+FLAGS Z=0 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000001 1 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000001010 10 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+\rowcolor{pcc}05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000001 & 0001 & .. & b = 1\\
+\rowcolor{datac}0E & 0000000000001010 & 000A & .. & result = 10\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Instruction 20 \hfill ticks 58 to 60 \quad ADD R3, R3, R1}]
+\textcolor{dim}{tick 58} \textbf{F} MAR$\leftarrow$05, MDR$\leftarrow$RAM[05]=16C8, IR$\leftarrow$MDR, PC$\leftarrow$06\\
+\textcolor{dim}{tick 59} \textbf{D} 0001 011 011 001 000 = ADD R3, R3, R1\\
+\textcolor{dim}{tick 60} \textbf{E} R3 $\leftarrow$ 10 + 5 = 15\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000110 [.] \hfill IR~~0001011011001000 [..]\\
+MAR 00000101 [.] \hfill MDR 0001011011001000 [..]\\
+FLAGS Z=0 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000001 1 [..] \hfill R6 0000000000000000 0 [..]\\
+\textcolor{wrt}{\textbf{R3 0000000000001111 15 [..]}} \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU} ADD: 10 + 5 = 15 [..] \hfill 0000000000001111\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+\rowcolor{pcc}06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000001 & 0001 & .. & b = 1\\
+\rowcolor{datac}0E & 0000000000001010 & 000A & .. & result = 10\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Instruction 21 \hfill ticks 61 to 63 \quad ST R3, result}]
+\textcolor{dim}{tick 61} \textbf{F} MAR$\leftarrow$06, MDR$\leftarrow$RAM[06]=960E, IR$\leftarrow$MDR, PC$\leftarrow$07\\
+\textcolor{dim}{tick 62} \textbf{D} 1001 011 0 00001110 = ST R3, result\\
+\textcolor{dim}{tick 63} \textbf{E} M[0x0E] (result) $\leftarrow$ R3 = 15\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000111 [.] \hfill IR~~1001011000001110 [..]\\
+MAR 00001110 [.] \hfill MDR 0000000000001111 [..]\\
+FLAGS Z=0 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000001 1 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000001111 15 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+\rowcolor{pcc}07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000001 & 0001 & .. & b = 1\\
+\rowcolor{wrt}\textcolor{white}{\textbf{0E}} & \textcolor{white}{\textbf{0000000000001111}} & \textcolor{white}{\textbf{000F}} & \textcolor{white}{\textbf{..}} & \textcolor{white}{\textbf{result = 15}}\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Instruction 22 \hfill ticks 64 to 66 \quad ADDI R2, R2, -1}]
+\textcolor{dim}{tick 64} \textbf{F} MAR$\leftarrow$07, MDR$\leftarrow$RAM[07]=64BF, IR$\leftarrow$MDR, PC$\leftarrow$08\\
+\textcolor{dim}{tick 65} \textbf{D} 0110 010 010 111111 = ADDI R2, R2, -1\\
+\textcolor{dim}{tick 66} \textbf{E} R2 $\leftarrow$ 1 + (-1) = 0\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00001000 [.] \hfill IR~~0110010010111111 [d.]\\
+MAR 00000111 [.] \hfill MDR 0110010010111111 [d.]\\
+FLAGS Z=1 N=0 C=1 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+\textcolor{wrt}{\textbf{R2 0000000000000000 0 [..]}} \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000001111 15 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU} ADD: 1 + -1 = 0 [..] \hfill 0000000000000000\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+\rowcolor{pcc}08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000001 & 0001 & .. & b = 1\\
+\rowcolor{datac}0E & 0000000000001111 & 000F & .. & result = 15\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Instruction 23 \hfill ticks 67 to 69 \quad ST R2, b}]
+\textcolor{dim}{tick 67} \textbf{F} MAR$\leftarrow$08, MDR$\leftarrow$RAM[08]=940D, IR$\leftarrow$MDR, PC$\leftarrow$09\\
+\textcolor{dim}{tick 68} \textbf{D} 1001 010 0 00001101 = ST R2, b\\
+\textcolor{dim}{tick 69} \textbf{E} M[0x0D] (b) $\leftarrow$ R2 = 0\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00001001 [.] \hfill IR~~1001010000001101 [..]\\
+MAR 00001101 [.] \hfill MDR 0000000000000000 [..]\\
+FLAGS Z=1 N=0 C=1 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000000 0 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000001111 15 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+\rowcolor{pcc}09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{wrt}\textcolor{white}{\textbf{0D}} & \textcolor{white}{\textbf{0000000000000000}} & \textcolor{white}{\textbf{0000}} & \textcolor{white}{\textbf{..}} & \textcolor{white}{\textbf{b = 0}}\\
+\rowcolor{datac}0E & 0000000000001111 & 000F & .. & result = 15\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Instruction 24 \hfill ticks 70 to 72 \quad JMP loop}]
+\textcolor{dim}{tick 70} \textbf{F} MAR$\leftarrow$09, MDR$\leftarrow$RAM[09]=B003, IR$\leftarrow$MDR, PC$\leftarrow$0A\\
+\textcolor{dim}{tick 71} \textbf{D} 1011 0000 00000011 = JMP loop\\
+\textcolor{dim}{tick 72} \textbf{E} PC $\leftarrow$ 0x03 (jump)\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000011 [.] \hfill IR~~1011000000000011 [..]\\
+MAR 00001001 [.] \hfill MDR 1011000000000011 [..]\\
+FLAGS Z=1 N=0 C=1 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000000 0 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000001111 15 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+\rowcolor{pcc}03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000000 & 0000 & .. & b = 0\\
+\rowcolor{datac}0E & 0000000000001111 & 000F & .. & result = 15\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Instruction 25 \hfill ticks 73 to 75 \quad CMP R2, R0}]
+\textcolor{dim}{tick 73} \textbf{F} MAR$\leftarrow$03, MDR$\leftarrow$RAM[03]=A080, IR$\leftarrow$MDR, PC$\leftarrow$04\\
+\textcolor{dim}{tick 74} \textbf{D} 1010 000 010 000 000 = CMP R2, R0\\
+\textcolor{dim}{tick 75} \textbf{E} compare 0 with 0, set flags\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00000100 [.] \hfill IR~~1010000010000000 [..]\\
+MAR 00000011 [.] \hfill MDR 1010000010000000 [..]\\
+FLAGS Z=1 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000000 0 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000001111 15 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU} SUB: 0 $-$ 0 = 0 [..] \hfill 0000000000000000\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+\rowcolor{pcc}04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000000 & 0000 & .. & b = 0\\
+\rowcolor{datac}0E & 0000000000001111 & 000F & .. & result = 15\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Instruction 26 \hfill ticks 76 to 78 \quad BLE done}]
+\textcolor{dim}{tick 76} \textbf{F} MAR$\leftarrow$04, MDR$\leftarrow$RAM[04]=B60A, IR$\leftarrow$MDR, PC$\leftarrow$05\\
+\textcolor{dim}{tick 77} \textbf{D} 1011 0110 00001010 = BLE done\\
+\textcolor{dim}{tick 78} \textbf{E} PC $\leftarrow$ 0x0A (branch taken)\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00001010 [.] \hfill IR~~1011011000001010 [..]\\
+MAR 00000100 [.] \hfill MDR 1011011000001010 [..]\\
+FLAGS Z=1 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000000 0 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000001111 15 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+\rowcolor{pcc}0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000000 & 0000 & .. & b = 0\\
+\rowcolor{datac}0E & 0000000000001111 & 000F & .. & result = 15\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}
+\noindent\begin{tcolorbox}[stepbox, title={Instruction 27 \hfill ticks 79 to 81 \quad OUT R3}]
+\textcolor{dim}{tick 79} \textbf{F} MAR$\leftarrow$0A, MDR$\leftarrow$RAM[0A]=F600, IR$\leftarrow$MDR, PC$\leftarrow$0B\\
+\textcolor{dim}{tick 80} \textbf{D} 1111 011 0 00000000 = OUT R3\\
+\textcolor{dim}{tick 81} \textbf{E} output R3 = 15 \hfill \colorbox{outc}{\textbf{OUTPUT: 15}}\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00001011 [.] \hfill IR~~1111011000000000 [..]\\
+MAR 00001010 [.] \hfill MDR 1111011000000000 [..]\\
+FLAGS Z=1 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000000 0 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000001111 15 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+\rowcolor{pcc}0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000000 & 0000 & .. & b = 0\\
+\rowcolor{datac}0E & 0000000000001111 & 000F & .. & result = 15\\
+\end{tabular}}
+\end{tcolorbox}\hfill\begin{tcolorbox}[stepbox, title={Instruction 28 \hfill ticks 82 to 84 \quad HALT}]
+\textcolor{dim}{tick 82} \textbf{F} MAR$\leftarrow$0B, MDR$\leftarrow$RAM[0B]=0000, IR$\leftarrow$MDR, PC$\leftarrow$0C\\
+\textcolor{dim}{tick 83} \textbf{D} 0000 000000000000 = HALT\\
+\textcolor{dim}{tick 84} \textbf{E} processor halted\\[2pt]
+\textcolor{dim}{special purpose registers (binary [ASCII])}\\
+PC~~00001100 [.] \hfill IR~~0000000000000000 [..]\\
+MAR 00001011 [.] \hfill MDR 0000000000000000 [..]\\
+FLAGS Z=1 N=0 C=0 V=0\\[2pt]
+\textcolor{dim}{general purpose registers (binary, decimal [ASCII])}\\
+R0 0000000000000000 0 [..] \hfill R4 0000000000000000 0 [..]\\
+R1 0000000000000101 5 [..] \hfill R5 0000000000000000 0 [..]\\
+R2 0000000000000000 0 [..] \hfill R6 0000000000000000 0 [..]\\
+R3 0000000000001111 15 [..] \hfill SP 0000000000000000 0 [..]\\
+\textcolor{dim}{ALU not used}\\[2pt]
+{\setlength{\tabcolsep}{2pt}\begin{tabular}{@{}lllll@{}}
+\textcolor{dim}{addr} & \textcolor{dim}{binary} & \textcolor{dim}{hex} & \textcolor{dim}{ascii} & \textcolor{dim}{content}\\
+00 & 1000001000001100 & 820C & .. & LD R1, a\\
+01 & 1000010000001101 & 840D & .. & LD R2, b\\
+02 & 0111011000000000 & 7600 & v. & LI R3, 0\\
+03 & 1010000010000000 & A080 & .. & CMP R2, R0\\
+04 & 1011011000001010 & B60A & .. & BLE done\\
+05 & 0001011011001000 & 16C8 & .. & ADD R3, R3, R1\\
+06 & 1001011000001110 & 960E & .. & ST R3, result\\
+07 & 0110010010111111 & 64BF & d. & ADDI R2, R2, -1\\
+08 & 1001010000001101 & 940D & .. & ST R2, b\\
+09 & 1011000000000011 & B003 & .. & JMP loop\\
+0A & 1111011000000000 & F600 & .. & OUT R3\\
+0B & 0000000000000000 & 0000 & .. & HALT\\
+\rowcolor{datac}0C & 0000000000000101 & 0005 & .. & a = 5\\
+\rowcolor{datac}0D & 0000000000000000 & 0000 & .. & b = 0\\
+\rowcolor{datac}0E & 0000000000001111 & 000F & .. & result = 15\\
+\end{tabular}}
+\end{tcolorbox}\par\vspace{3pt}

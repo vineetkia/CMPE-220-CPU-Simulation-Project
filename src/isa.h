@@ -3,9 +3,9 @@
  * The SPARTAN-16 instruction set.
  *
  * Quick summary of the machine:
- *   - 16-bit words, 256 words of memory (so addresses are 8 bits)
- *   - 8 registers R0..R7. R0 is always 0. R7 is the stack pointer (SP)
- *   - PC, IR, MAR, MDR and the flags Z N C V
+ *   - 16-bit words, 256 words of RAM (so addresses are 8 bits)
+ *   - 8 general purpose registers R0..R7. R0 is always 0. R7 is the stack pointer (SP)
+ *   - special purpose registers: PC, IR, MAR, MDR and the flags Z N C V
  *   - every instruction is exactly one 16-bit word
  */
 #ifndef ISA_H
@@ -20,8 +20,8 @@
 #define NUM_REGS  8
 #define SP        7         /* R7 is the stack pointer */
 
-#define MAX_NAME    64      /* longest label name */
-#define MAX_SYMBOLS 512     /* most labels in one program */
+#define MAX_NAME    32      /* longest label name */
+#define MAX_SYMBOLS 16      /* most labels in one program */
 
 /* Opcodes go in bits 15..12 of every instruction. */
 enum {
@@ -42,16 +42,7 @@ typedef struct {
     int width;
 } Field;
 
-/* One row of the assembler's lookup table: mnemonic -> opcode and format.
- * The assembler looks up every instruction name in OPCODE_TABLE. */
-typedef struct {
-    const char *mnemonic;
-    int opcode;         /* 4-bit opcode, bits 15..12 */
-    Format format;      /* LD and ST are listed as FMT_M, [rb+imm5] makes them FMT_MX */
-    int extra;          /* branch condition for JMP/Bcc, 1 for POP, else 0 */
-} OpcodeEntry;
-
-/* One row of the instruction list printed by "./spartan isa". */
+/* One row of the instruction table printed by "./spartan isa". */
 typedef struct {
     const char *name;
     int opcode;
@@ -61,7 +52,7 @@ typedef struct {
     const char *flags;
 } IsaRow;
 
-/* A label and the address it stands for. */
+/* A name for an address, like "a" for 0x06. Used to make the trace easier to read. */
 typedef struct {
     char name[MAX_NAME];
     int value;
@@ -88,38 +79,22 @@ extern const char *const FORMAT_NAMES[FMT_COUNT];
 extern const Field *const FORMATS[FMT_COUNT];
 extern const IsaRow ISA_TABLE[];
 extern const int ISA_TABLE_SIZE;
-extern const OpcodeEntry OPCODE_TABLE[];
-extern const int OPCODE_TABLE_SIZE;
 
 /* Small number helpers */
 int sign_extend(int value, int bits);
 int to_signed16(int value);
-int fits_signed(int value, int bits);
 
-/* Find a mnemonic (in upper case) in OPCODE_TABLE. Returns NULL if it isn't there. */
-const OpcodeEntry *lookup_mnemonic(const char *mnemonic);
-
-/* The condition code of a branch name like "BNE", or -1 if it isn't a branch. */
-int branch_cond(const char *name);
-
-/* Building instruction words from their fields */
-uint16_t enc_r(int op, int rd, int rs, int rt);
-uint16_t enc_i(int op, int rd, int rs, int imm6);
-uint16_t enc_l(int op, int rd, int imm9);
-uint16_t enc_m_abs(int op, int r, int addr8);
-uint16_t enc_m_ind(int op, int r, int rb, int imm5);
-uint16_t enc_b(int op, int cond, int addr8);
-uint16_t enc_s(int op, int r, int s);
-
-/* Splitting an instruction word back into fields */
+/* Splitting an instruction word into its fields */
 Decoded decode(uint16_t word);
 Format decoded_format(const Decoded *d);
 const char *decoded_mnemonic(const Decoded *d, char *buf, size_t size);
+const char *cond_name(int cond);    /* "JMP", "BEQ", ... or "?" */
 
 /* Text helpers. symbols can be NULL. */
 const char *addr_text(int addr, const SymbolTable *symbols, char *buf, size_t size);
 const char *disassemble(uint16_t word, const SymbolTable *symbols, char *buf, size_t size);
-const char *binary_fields(uint16_t word, char *buf, size_t size);
-const char *binary_plain(uint16_t word, char *buf, size_t size);
+const char *binary_fields(uint16_t word, char *buf, size_t size);   /* "0011 001 001 010 000" */
+const char *binary_plain(uint16_t word, char *buf, size_t size);    /* "0011001001010000" */
+const char *opcode_bits(int opcode, char *buf, size_t size);       /* "0011" */
 
 #endif

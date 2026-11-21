@@ -9,8 +9,8 @@
 CC     ?= cc
 CFLAGS ?= -std=c99 -Wall -Wextra -pedantic -O2
 
-PARTS   = src/isa.c src/components.c src/cpu.c src/loader.c src/assembler.c src/compiler.c src/display.c
-HEADERS = src/isa.h src/components.h src/cpu.h src/loader.h src/assembler.h src/compiler.h src/display.h
+PARTS   = src/isa.c src/components.c src/cpu.c src/programs.c src/display.c
+HEADERS = src/isa.h src/components.h src/cpu.h src/programs.h src/display.h
 PDF     = SPARTAN16_CPU_Design_Report.pdf
 
 all: spartan
@@ -32,11 +32,9 @@ test: build/test_spartan
 
 outputs: spartan
 	mkdir -p output
-	./spartan run programs/factorial_of_3.asm --no-color > output/factorial_of_3_trace.txt
-	./spartan run programs/factorial.asm --no-color > output/factorial_trace.txt
-	./spartan run programs/power.c --no-color > output/power_trace.txt
-	./spartan asm programs/factorial.asm > output/factorial_listing.txt
-	./spartan compile programs/power.c -o output/power.asm
+	./spartan run add --no-color > output/add_trace.txt
+	./spartan run multiply --no-color > output/multiply_trace.txt
+	./spartan isa > output/isa.txt
 
 # pdflatex runs twice: the second run fills in the total page count
 report: build/gen_report

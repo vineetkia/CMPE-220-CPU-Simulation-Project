@@ -1,0 +1,27 @@
+NAME      OPCODE FMT   SYNTAX                             WHAT IT DOES                             FLAGS
+HALT      0000   N     HALT                               stop the CPU                             -
+ADD       0001   R     ADD rd, rs, rt                     rd = rs + rt                             ZNCV
+SUB       0010   R     SUB rd, rs, rt                     rd = rs - rt                             ZNCV
+MUL       0011   R     MUL rd, rs, rt                     rd = rs * rt (low 16 bits)               ZNCV
+AND       0100   R     AND rd, rs, rt                     rd = rs & rt                             ZN
+OR        0101   R     OR rd, rs, rt                      rd = rs | rt                             ZN
+ADDI      0110   I     ADDI rd, rs, imm6                  rd = rs + imm6                           ZNCV
+LI        0111   L     LI rd, imm9                        rd = imm9                                -
+LD        1000   M/MX  LD r, addr | LD r, [rb+imm5]       r = M[address]                           -
+ST        1001   M/MX  ST r, addr | ST r, [rb+imm5]       M[address] = r                           -
+CMP       1010   R     CMP rs, rt                         set flags from rs - rt                   ZNCV
+Bcc       1011   B     JMP|BEQ|BNE|BLT|BGE|BGT|BLE addr   if condition: PC = addr                  -
+CALL      1100   B     CALL addr                          push PC, then PC = addr                  -
+RET       1101   N     RET                                pop PC from the stack                    -
+PUSH/POP  1110   S     PUSH r | POP r                     put r on / take r off the stack          -
+OUT       1111   S     OUT r                              print r                                  -
+
+Instruction formats (bit 15 on the left):
+  R   op(4) | rd(3) | rs(3) | rt(3) | 000(3)
+  I   op(4) | rd(3) | rs(3) | imm6(6)
+  L   op(4) | rd(3) | imm9(9)
+  M   op(4) | r(3) | m=0(1) | addr8(8)
+  MX  op(4) | r(3) | m=1(1) | rb(3) | imm5(5)
+  B   op(4) | cond(4) | addr8(8)
+  S   op(4) | r(3) | s(1) | 00000000(8)
+  N   op(4) | 000000000000(12)

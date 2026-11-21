@@ -1,294 +1,220 @@
 /*
  * display.c
- * Prints the machine state in the terminal.
+ * Prints the program and the machine state in the terminal.
  *
- * How to read the memory dump:
- *     >7208     the next instruction (the word PC points to)
- *     [0038]    a word that the last instruction wrote
- *     R1=0038*  a register that the last instruction wrote
+ * How to read the RAM dump:
+ *     >   the next instruction (the word PC points to)
+ *     *   a word the last instruction wrote
+ *   Every word is shown in binary, in hex, and as two ASCII characters
+ *   (one per byte, '.' when the byte is not a printable character).
+ *   The CPU registers and the ALU are shown the same way: binary, number and ASCII.
+ *
+ * In the register list, * after a register means the last instruction changed it.
  */
-#include <ctype.h>
 #include <string.h>
 
 #include "display.h"
 
-#define COLOR_PC    "\033[1;32m"
+#define COLOR_MARK  "\033[1;32m"
 #define COLOR_WRITE "\033[1;31m"
 #define COLOR_HEAD  "\033[1;36m"
 #define COLOR_END   "\033[0m"
 
-static void print_bar(FILE *out)
+static void print_bar(FILE *out, char c)
 {
     char bar[79];
 
-    memset(bar, '=', 78);
+    memset(bar, c, 78);
     bar[78] = '\0';
     fprintf(out, "%s\n", bar);
 }
 
-int window_end(const Program *prog)
+static void heading(FILE *out, int color, const char *text)
 {
-    int n = prog->word_count > ROW ? prog->word_count : ROW;
-    return (n + ROW - 1) / ROW * ROW;
+    print_bar(out, '=');
+    fprintf(out, "%s%s%s\n", color ? COLOR_HEAD : "", text, color ? COLOR_END : "");
 }
 
-/* What is stored in this memory row: code, data, stack (or a mix). */
-static void print_row_kind(FILE *out, const Program *prog, int start)
-{
-    int seen[3] = {0, 0, 0};
-    int a, printed = 0;
-
-    for (a = start; a < start + ROW && a < prog->word_count; a++) {
-        if (!seen[prog->kinds[a]]) {
-            seen[prog->kinds[a]] = 1;
-            fprintf(out, "%s%s", printed ? "/" : "", kind_name(prog->kinds[a]));
-            printed = 1;
-        }
-    }
-}
-
-/* pc is -1 after HALT, because then there is no next instruction to mark. */
-static void print_memory(FILE *out, const Program *prog, const uint16_t *mem, int pc,
-                         const char *written, int color)
-{
-    int start, a, i;
-
-    fprintf(out, "  ADDR  ");
-    for (i = 0; i < ROW; i++)
-        fprintf(out, "  +%d  ", i);
-    fprintf(out, "\n");
-
-    for (start = 0; start < window_end(prog); start += ROW) {
-        fprintf(out, "  0x%02X  ", start);
-        for (a = start; a < start + ROW; a++) {
-            if (written && written[a])
-                fprintf(out, "%s[%04X]%s", color ? COLOR_WRITE : "", mem[a], color ? COLOR_END : "");
-            else if (a == pc)
-                fprintf(out, "%s>%04X %s", color ? COLOR_PC : "", mem[a], color ? COLOR_END : "");
-            else
-                fprintf(out, " %04X ", mem[a]);
-        }
-        fprintf(out, "  ");
-        print_row_kind(out, prog, start);
-        fprintf(out, "\n");
-    }
-}
-
-static void print_regs(FILE *out, const uint16_t *regs, const char *written)
+/* n bits of value in binary, like "00000101". */
+static const char *bits_of(unsigned value, int n, char *buf)
 {
     int i;
-
-    for (i = 0; i < NUM_REGS; i++)
-        fprintf(out, "%s%s=%04X%c", i ? " " : "", REG_NAMES[i], regs[i],
-                (written && written[i]) ? '*' : ' ');
-}
-
-static void print_vars(FILE *out, const Program *prog, const uint16_t *mem)
-{
-    int i;
-
-    if (prog->variables.count == 0)
-        fprintf(out, "(none)");
-    for (i = 0; i < prog->variables.count; i++)
-        fprintf(out, "%s%s=%d", i ? "  " : "", prog->variables.items[i].name,
-                mem[prog->variables.items[i].value]);
-}
-
-static void print_flags(FILE *out, const Flags *f)
-{
-    fprintf(out, "Z=%d N=%d C=%d V=%d", f->z, f->n, f->c, f->v);
-}
-
-/* One short entry for every transfer on the system bus. */
-static void print_bus(FILE *out, const BusTransfer *log, int count)
-{
-    int i;
-
-    for (i = 0; i < count; i++) {
-        const char *phase = log[i].phase == PHASE_FETCH ? "fetch" :
-                            log[i].phase == PHASE_LOAD ? "load" : "execute";
-
-        if (i)
-            fprintf(out, " | ");
-        if (log[i].kind == XFER_READ)
-            fprintf(out, "%s: read M[0x%02X] = %04X", phase, log[i].addr, log[i].data);
-        else if (log[i].kind == XFER_WRITE)
-            fprintf(out, "%s: write M[0x%02X] = %04X", phase, log[i].addr, log[i].data);
-        else
-            fprintf(out, "%s: output port = %u", phase, log[i].data);
-    }
-}
-
-/* Get the instruction part of a source line: no label, no comment, single spaces. */
-static void source_code(const char *line, char *code, size_t size)
-{
-    const char *p = line, *start;
-    size_t n = 0;
-    int space = 0;
-
-    while (isspace((unsigned char)*p))
-        p++;
-    start = p;
-    while (isalnum((unsigned char)*p) || *p == '_' || *p == '.')
-        p++;
-    if (p > start && *p == ':')     /* skip "label:" */
-        start = p + 1;
-    for (p = start; *p && *p != ';' && n + 1 < size; p++) {
-        if (isspace((unsigned char)*p)) {
-            space = 1;
-            continue;
-        }
-        if (space && n > 0)
-            code[n++] = ' ';
-        space = 0;
-        code[n++] = *p;
-    }
-    code[n] = '\0';
-}
-
-/* The opcode as 4 binary digits, like "1000". */
-static const char *opcode_bits(int op, char *buf)
-{
-    int i;
-    for (i = 0; i < 4; i++)
-        buf[i] = ((op >> (3 - i)) & 1) ? '1' : '0';
-    buf[4] = '\0';
+    for (i = 0; i < n; i++)
+        buf[i] = ((value >> (n - 1 - i)) & 1) ? '1' : '0';
+    buf[n] = '\0';
     return buf;
 }
 
-void print_assemble(FILE *out, const Program *prog)
+void word_ascii(uint16_t word, char out[3])
 {
-    int i, j;
+    unsigned high = (word >> 8) & 0xFF, low = word & 0xFF;
+    out[0] = (high >= 0x20 && high < 0x7F) ? (char)high : '.';
+    out[1] = (low >= 0x20 && low < 0x7F) ? (char)low : '.';
+    out[2] = '\0';
+}
 
-    print_bar(out);
-    fprintf(out, "PHASE 1: ASSEMBLE   %s -> machine code\n", prog->source_name);
-    fprintf(out, "  Each instruction name is looked up in the ISA table (OPCODE_TABLE in isa.c).\n");
-    fprintf(out, "  The table gives the opcode and the format. The operands fill the other bits.\n\n");
-    fprintf(out, "  ADDR  %-22s %-20s %-24s HEX\n", "SOURCE", "LOOKUP", "MACHINE CODE (binary)");
-
-    for (i = 0; i < prog->listing_count; i++) {
-        const ListingLine *row = &prog->listing[i];
-        char code[128], mnemonic[16], lookup[40], bits[32], opbits[8];
-        uint16_t word;
-
-        if (row->addr < 0 || row->word_count == 0)
-            continue;
-        source_code(row->text, code, sizeof code);
-        word = prog->words[row->addr];
-
-        if (prog->kinds[row->addr] == KIND_STACK) {
-            fprintf(out, "  0x%02X  %-22s %-20s %d words of 0000\n", row->addr, code, "empty words", row->word_count);
-            continue;
-        }
-        if (prog->kinds[row->addr] == KIND_DATA) {
-            for (j = 0; j < row->word_count; j++) {
-                word = prog->words[row->addr + j];
-                binary_plain(word, bits, sizeof bits);
-                fprintf(out, "  0x%02X  %-22s %-20s %-24s %04X\n", row->addr + j, j == 0 ? code : "",
-                        "data word", bits, word);
-            }
-            continue;
-        }
-
-        /* an instruction: show the table lookup that the assembler did */
-        for (j = 0; code[j] && code[j] != ' ' && j < 15; j++)
-            mnemonic[j] = (char)toupper((unsigned char)code[j]);
-        mnemonic[j] = '\0';
-        {
-            Decoded d = decode(word);
-            snprintf(lookup, sizeof lookup, "%-4s -> %s (%s)", mnemonic, opcode_bits(d.op, opbits),
-                     FORMAT_NAMES[decoded_format(&d)]);
-        }
-        binary_fields(word, bits, sizeof bits);
-        fprintf(out, "  0x%02X  %-22s %-20s %-24s %04X\n", row->addr, code, lookup, bits, word);
+void value_ascii(unsigned value, int bits, char out[3])
+{
+    if (bits <= 8) {
+        unsigned byte = value & 0xFF;
+        out[0] = (byte >= 0x20 && byte < 0x7F) ? (char)byte : '.';
+        out[1] = '\0';
+    } else {
+        word_ascii((uint16_t)value, out);
     }
-
-    fprintf(out, "\n  Labels: ");
-    for (i = 0; i < prog->symbols.count; i++)
-        fprintf(out, "%s%s=0x%02X", i ? ", " : "", prog->symbols.items[i].name, prog->symbols.items[i].value);
-    fprintf(out, "\n");
 }
 
-void print_load(FILE *out, const Program *prog, const CPU *cpu, const LoadStep *steps, int count, int color)
+const char *word_content(const HandProgram *prog, int addr, uint16_t word, char *buf, size_t size)
 {
-    char written[MEM_SIZE];
-    int i, j;
+    int i;
 
-    print_bar(out);
-    fprintf(out, "PHASE 2: LOAD   the loader writes each word into RAM over the system bus\n");
-    fprintf(out, "  RAM before loading: all %d words are 0000\n\n", MEM_SIZE);
-    fprintf(out, "  LOAD  ADDRESS BUS  DATA BUS  CONTROL BUS  RAM WORD           WHAT IT IS\n");
-
-    for (i = 0; i < count; i++) {
-        char what[MAX_NAME + 32];
-
-        if (prog->kinds[i] == KIND_CODE) {
-            disassemble(steps[i].word, &prog->symbols, what, sizeof what);
-        } else if (prog->kinds[i] == KIND_STACK) {
-            snprintf(what, sizeof what, "stack space");
-        } else {
-            snprintf(what, sizeof what, "data");
-            for (j = 0; j < prog->variables.count; j++)
-                if (prog->variables.items[j].value == i)
-                    snprintf(what, sizeof what, "data (%s)", prog->variables.items[j].name);
+    if (addr < prog->code_count)
+        return disassemble(word, &prog->names, buf, size);
+    for (i = 0; i < prog->names.count; i++) {
+        if (prog->names.items[i].value == addr) {
+            snprintf(buf, size, "%s = %u", prog->names.items[i].name, word);
+            return buf;
         }
-        fprintf(out, "  %-4d  0x%02X         %04X      %-11s  RAM[0x%02X] = %04X  %s\n",
-                i + 1, steps[i].addr, steps[i].word, steps[i].control, steps[i].addr, steps[i].word, what);
     }
-
-    memset(written, 0, sizeof written);
-    memset(written, 1, (size_t)count);
-    fprintf(out, "\n  RAM after loading (each [....] word was just written by the loader):\n");
-    print_memory(out, prog, cpu->memory.words, -1, written, color);
-    fprintf(out, "\n  CPU reset: PC = 0x00 (the entry point), all registers and flags are 0\n");
+    snprintf(buf, size, "data = %u", word);
+    return buf;
 }
 
-void print_initial(FILE *out, const Program *prog, const CPU *cpu, int color)
+void print_ram(FILE *out, const HandProgram *prog, const uint16_t *mem, int pc, const char *written, int color)
 {
-    print_bar(out);
-    fprintf(out, "PHASE 3: EXECUTE   fetch, decode, execute until HALT\n");
-    print_bar(out);
-    fprintf(out, "%sSTEP 0  | program loaded from %s%s\n",
-            color ? COLOR_HEAD : "", prog->source_name, color ? COLOR_END : "");
-    fprintf(out, "  cpu    : PC=%02X IR=%04X MAR=%02X MDR=%04X   flags ",
-            cpu->pc.value, cpu->ir.value, cpu->mar.value, cpu->mdr.value);
-    print_flags(out, &cpu->flags);
-    fprintf(out, "\n  regs   : ");
-    print_regs(out, cpu->regs.values, NULL);
-    fprintf(out, "\n  vars   : ");
-    print_vars(out, prog, cpu->memory.words);
-    fprintf(out, "\n");
-    print_memory(out, prog, cpu->memory.words, (int)cpu->pc.value, NULL, color);
+    int addr;
+
+    fprintf(out, "     ADDR  BINARY            HEX   ASCII  CONTENT\n");
+    for (addr = 0; addr < prog->word_count; addr++) {
+        char bits[17], ascii[3], content[64];
+        int is_written = written && written[addr];
+        const char *mark = is_written ? "*" : (addr == pc ? ">" : " ");
+        const char *start = "", *end = "";
+
+        if (color && is_written) {
+            start = COLOR_WRITE;
+            end = COLOR_END;
+        } else if (color && addr == pc) {
+            start = COLOR_MARK;
+            end = COLOR_END;
+        }
+        word_ascii(mem[addr], ascii);
+        fprintf(out, "  %s%s  0x%02X  %s  %04X  %s     %s%s\n", start, mark, addr,
+                bits_of(mem[addr], 16, bits), mem[addr], ascii,
+                word_content(prog, addr, mem[addr], content, sizeof content), end);
+    }
 }
 
-void print_step(FILE *out, const Program *prog, const StepRecord *rec, int color)
+/* Print the C file, without the comment block at the top. */
+static void print_c_source(FILE *out, const char *source)
 {
-    char bits[32];
+    const char *p = source;
+    const char *end = strstr(source, "*/");
 
-    binary_fields((uint16_t)rec->ir, bits, sizeof bits);
-    print_bar(out);
-    fprintf(out, "%sSTEP %-3d| PC 0x%02X | IR %04X = %-19s | %s%s\n", color ? COLOR_HEAD : "",
-            rec->step, rec->pc, rec->ir, bits, rec->text, color ? COLOR_END : "");
-    fprintf(out, "  result : %s\n", rec->effect);
-    if (rec->has_output)
-        fprintf(out, "  OUTPUT : %u\n", rec->output);
+    if (strncmp(source, "/*", 2) == 0 && end) {
+        p = end + 2;
+        while (*p == '\n')
+            p++;
+    }
+    while (*p) {
+        const char *nl = strchr(p, '\n');
+        int n = nl ? (int)(nl - p) : (int)strlen(p);
+        fprintf(out, "    %.*s\n", n, p);
+        p += n;
+        if (*p == '\n')
+            p++;
+    }
+}
 
-    fprintf(out, "  bus    : ");
-    print_bus(out, rec->bus_log, rec->bus_count);
+void print_program(FILE *out, const HandProgram *prog, const char *c_source, const CPU *cpu, int color)
+{
+    char title[128];
+    int addr;
 
-    fprintf(out, "\n  alu    : ");
-    if (rec->alu.used)
-        fprintf(out, "%s  A=%04X  B=%04X  ->  %04X", rec->alu.op, rec->alu.a, rec->alu.b, rec->alu.result);
+    snprintf(title, sizeof title, "PROGRAM: %s  (%s)", prog->name, prog->title);
+    heading(out, color, title);
+
+    heading(out, color, "STEP 1: THE C PROGRAM");
+    if (c_source)
+        print_c_source(out, c_source);
     else
-        fprintf(out, "not used");
+        fprintf(out, "    (could not open %s)\n", prog->c_file);
 
-    fprintf(out, "\n  cpu    : PC=%02X IR=%04X MAR=%02X MDR=%04X   flags ",
-            rec->next_pc, rec->ir, rec->mar, rec->mdr);
-    print_flags(out, &rec->flags);
-    fprintf(out, "   cycles %d\n  regs   : ", rec->cycles);
-    print_regs(out, rec->regs, rec->reg_written);
-    fprintf(out, "\n  vars   : ");
-    print_vars(out, prog, rec->mem);
-    fprintf(out, "\n");
-    print_memory(out, prog, rec->mem, rec->halted ? -1 : rec->next_pc, rec->mem_written, color);
+    heading(out, color, "STEP 2: TRANSLATED BY HAND INTO OUR ASSEMBLY, THEN INTO BINARY");
+    fprintf(out, "  ADDR  C LINE                      ASSEMBLY          BINARY (fields)        HEX\n");
+    for (addr = 0; addr < prog->word_count; addr++) {
+        const ProgramWord *w = &prog->words[addr];
+        uint16_t word = bin(w->bits);
+        char fields[32];
+
+        if (addr < prog->code_count)
+            binary_fields(word, fields, sizeof fields);
+        else
+            binary_plain(word, fields, sizeof fields);
+        fprintf(out, "  0x%02X  %-27s %-17s %-22s %04X\n", addr, w->c_line, w->assembly, fields, word);
+    }
+
+    heading(out, color, "STEP 3: THE BINARY PUT INTO RAM BY HAND (the program starts at 0x00, PC = 00)");
+    print_ram(out, prog, cpu->memory.words, (int)cpu->pc.value, NULL, color);
+
+    heading(out, color, "STEP 4: RUN IT (each instruction = fetch, decode, execute = 3 clock ticks)");
+}
+
+static void print_register(FILE *out, const char *name, unsigned value, int bits, int changed)
+{
+    char b[17], hex[8], ascii[3];
+    snprintf(hex, sizeof hex, "0x%0*X", bits / 4, value);
+    value_ascii(value, bits, ascii);
+    fprintf(out, "    %-5s %-16s  %-6s  %-7u  %s%s\n", name, bits_of(value, bits, b), hex, value, ascii,
+            changed ? "  *" : "");
+}
+
+void print_step(FILE *out, const HandProgram *prog, const StepRecord *rec, int color)
+{
+    char title[160], b1[17], b2[17], b3[17], a1[3], a2[3], a3[3];
+    int i;
+
+    snprintf(title, sizeof title, "INSTRUCTION %d   (clock ticks %lu to %lu)   %s",
+             rec->step, rec->clock[0], rec->clock[2], rec->text);
+    heading(out, color, title);
+    fprintf(out, "  tick %-3lu FETCH    %s\n", rec->clock[0], rec->fetch);
+    fprintf(out, "  tick %-3lu DECODE   %s\n", rec->clock[1], rec->decode);
+    fprintf(out, "  tick %-3lu EXECUTE  %s\n", rec->clock[2], rec->effect);
+    if (rec->has_output)
+        fprintf(out, "  OUTPUT   %u\n", rec->output);
+
+    /* the CPU */
+    fprintf(out, "\n  CPU special purpose registers\n");
+    fprintf(out, "    %-5s %-16s  %-6s  %-7s  %s\n", "", "binary", "hex", "decimal", "ASCII");
+    print_register(out, "PC", (unsigned)rec->next_pc, 8, 0);
+    print_register(out, "IR", rec->ir, 16, 0);
+    print_register(out, "MAR", rec->mar, 8, 0);
+    print_register(out, "MDR", rec->mdr, 16, 0);
+    fprintf(out, "    FLAGS  Z=%d N=%d C=%d V=%d\n", rec->flags.z, rec->flags.n, rec->flags.c, rec->flags.v);
+
+    fprintf(out, "  CPU general purpose registers (binary, decimal, ASCII)\n");
+    for (i = 0; i < 4; i++) {
+        value_ascii(rec->regs[i], 16, a1);
+        value_ascii(rec->regs[i + 4], 16, a2);
+        fprintf(out, "    %-2s = %s (%5u) %s%s    %-2s = %s (%5u) %s%s\n",
+                REG_NAMES[i], bits_of(rec->regs[i], 16, b1), rec->regs[i], a1, rec->reg_written[i] ? " *" : "  ",
+                REG_NAMES[i + 4], bits_of(rec->regs[i + 4], 16, b2), rec->regs[i + 4], a2,
+                rec->reg_written[i + 4] ? " *" : "");
+    }
+
+    fprintf(out, "  CPU ALU (binary, decimal, ASCII)\n");
+    if (rec->alu.used) {
+        value_ascii(rec->alu.a, 16, a1);
+        value_ascii(rec->alu.b, 16, a2);
+        value_ascii(rec->alu.result, 16, a3);
+        fprintf(out, "    %s  A = %s (%u) %s   B = %s (%u) %s\n         result = %s (%u) %s\n", rec->alu.op,
+                bits_of(rec->alu.a, 16, b1), rec->alu.a, a1, bits_of(rec->alu.b, 16, b2), rec->alu.b, a2,
+                bits_of(rec->alu.result, 16, b3), rec->alu.result, a3);
+    }
+    else
+        fprintf(out, "    not used by this instruction\n");
+
+    /* the RAM */
+    fprintf(out, "\n  RAM (> next instruction, * just written)\n");
+    print_ram(out, prog, rec->mem, rec->halted ? -1 : rec->next_pc, rec->mem_written, color);
 }

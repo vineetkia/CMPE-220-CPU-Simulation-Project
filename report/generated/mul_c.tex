@@ -1,0 +1,17 @@
+\begin{lstlisting}[style=csrc]
+#include <stdio.h>
+
+int a = 5;
+int b = 3;
+int result = 0;
+
+int main(void)
+{
+    while (b > 0) {
+        result = result + a;
+        b = b - 1;
+    }
+    printf("%d\n", result);
+    return 0;
+}
+\end{lstlisting}
